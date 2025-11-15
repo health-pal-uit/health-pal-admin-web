@@ -65,7 +65,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="menu flex w-64 flex-col bg-base-100 p-4 shadow-xl">
+    <aside className="flex h-full w-64 flex-col bg-base-100 p-4 shadow-xl">
       <div className="mb-4 border-b border-base-300 pb-4">
         <Link href="/dashboard" className="flex items-center gap-3">
           <Image
@@ -82,21 +82,27 @@ export function Sidebar() {
         </Link>
       </div>
 
-      <ul className="flex-1 space-y-1 overflow-y-auto">
+      <nav className="flex-1 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);
 
           return (
-            <li key={item.id}>
-              <Link href={item.href} className={isActive ? "active" : ""}>
-                <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </Link>
-            </li>
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                isActive
+                  ? "bg-[#E8F5F1] text-primary"
+                  : "text-base-content/70 hover:bg-base-200"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{item.label}</span>
+            </Link>
           );
         })}
-      </ul>
+      </nav>
 
       <div className="mt-auto border-t border-base-300 pt-4">
         <button
