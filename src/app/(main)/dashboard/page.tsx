@@ -107,7 +107,7 @@ const DashboardPage: NextPage = () => {
         </p>
       </div>
 
-      <div className="stats stats-vertical lg:stats-horizontal shadow bg-base-100">
+      <div className="stats stats-vertical lg:stats-horizontal shadow-xl bg-base-100">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (

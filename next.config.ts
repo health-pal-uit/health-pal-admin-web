@@ -7,13 +7,19 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
         port: "",
-        pathname: "/**", // Cho phép mọi đường dẫn ảnh từ host này
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "placehold.co",
         port: "",
-        pathname: "/**", // Cho phép host dự phòng
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },
