@@ -10,8 +10,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const page = searchParams.get("page") || "1";
+  const limit = searchParams.get("limit") || "10";
+
+  const url = `${EXTERNAL_API_URL}?page=${page}&limit=${limit}`;
+
   try {
-    const apiRes = await fetch(EXTERNAL_API_URL, {
+    const apiRes = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

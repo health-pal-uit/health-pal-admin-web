@@ -21,9 +21,7 @@ function processApiUser(user: ApiUser): User {
     ? new Date(user.birth_date).toLocaleDateString("vi-VN")
     : "N/A";
 
-  const avatar =
-    user.avatar_url ||
-    `https://placehold.co/100/E8F5F1/2D8B6E?text=${user.fullname.charAt(0)}`;
+  const avatar = user.avatar_url || "/image/health-pal-logo.png";
 
   return {
     id: user.id,
@@ -45,12 +43,18 @@ export default function UsersPage() {
 
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [limit] = useState(10);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/users");
+        const res = await fetch(
+          `/api/users?page=${currentPage}&limit=${limit}`,
+        );
         const data = await res.json();
 
         if (!res.ok) {
@@ -58,8 +62,11 @@ export default function UsersPage() {
           return;
         }
 
-        const processedUsers = (data.data as ApiUser[]).map(processApiUser);
+        const usersList = Array.isArray(data.data.data) ? data.data.data : [];
+        const processedUsers = (usersList as ApiUser[]).map(processApiUser);
         setAllUsers(processedUsers);
+        setTotalUsers(data.data.total || 0);
+        setTotalPages(Math.ceil((data.data.total || 0) / limit));
       } catch (error) {
         toast.error("An error occurred while fetching users.");
         console.error(error);
@@ -69,13 +76,7 @@ export default function UsersPage() {
     };
 
     fetchUsers();
-  }, []);
-
-  const filteredUsers = allUsers.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  }, [currentPage, limit]);
 
   const handleViewDetails = (user: User) => {
     setSelectedUser(user);
@@ -128,7 +129,44 @@ export default function UsersPage() {
           <span className="loading loading-spinner loading-lg text-primary"></span>
         </div>
       ) : (
-        <UserTable users={filteredUsers} onViewDetails={handleViewDetails} />
+        <UserTable users={allUsers} onViewDetails={handleViewDetails} />
+      )}
+
+      {!isLoading && totalPages > 1 && (
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-base-content/70">
+                Showing {(currentPage - 1) * limit + 1} to{" "}
+                {Math.min(currentPage * limit, totalUsers)} of {totalUsers}{" "}
+                users
+              </div>
+              <div className="join">
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  «
+                </button>
+                <button className="join-item btn btn-sm">
+                  Page {currentPage} of {totalPages}
+                </button>
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <UserDetailModal user={selectedUser} onClose={handleCloseModal} />

@@ -45,7 +45,7 @@ export function UserTable({ users, onViewDetails }: UserTableProps) {
                         <div className="mask mask-squircle w-12 h-12">
                           <Image
                             src={user.avatar}
-                            alt={user.name}
+                            alt={user.name || "User Avatar"}
                             width={48}
                             height={48}
                           />
