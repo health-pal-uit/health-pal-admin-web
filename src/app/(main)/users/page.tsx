@@ -85,6 +85,45 @@ export default function UsersPage() {
     )?.showModal();
   };
 
+  const handleDeleteUser = async (user: User) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to delete user");
+        return;
+      }
+
+      toast.success("User deleted successfully");
+
+      // Refresh the user list
+      setAllUsers((prevUsers) => prevUsers.filter((u) => u.id !== user.id));
+      setTotalUsers((prev) => prev - 1);
+
+      // Recalculate total pages
+      const newTotalPages = Math.ceil((totalUsers - 1) / limit);
+      setTotalPages(newTotalPages);
+
+      // If current page is now empty and not the first page, go to previous page
+      if (allUsers.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting the user.");
+      console.error(error);
+    }
+  };
+
   const handleCloseModal = () => {
     (
       document.getElementById("user_details_modal") as HTMLDialogElement
@@ -129,7 +168,11 @@ export default function UsersPage() {
           <span className="loading loading-spinner loading-lg text-primary"></span>
         </div>
       ) : (
-        <UserTable users={allUsers} onViewDetails={handleViewDetails} />
+        <UserTable
+          users={allUsers}
+          onViewDetails={handleViewDetails}
+          onDeleteUser={handleDeleteUser}
+        />
       )}
 
       {!isLoading && totalPages > 1 && (

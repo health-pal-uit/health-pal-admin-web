@@ -1,15 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { MoreVertical, Eye, UserCheck, UserX } from "lucide-react";
+import { MoreVertical, Eye, UserCheck, UserX, Trash2 } from "lucide-react";
 import { User } from "../type";
 
 interface UserTableProps {
   users: User[];
   onViewDetails: (user: User) => void;
+  onDeleteUser: (user: User) => void;
 }
 
-export function UserTable({ users, onViewDetails }: UserTableProps) {
+export function UserTable({
+  users,
+  onViewDetails,
+  onDeleteUser,
+}: UserTableProps) {
   const getStatusBadge = (status: User["status"]) => {
     switch (status) {
       case "active":
@@ -91,6 +96,14 @@ export function UserTable({ users, onViewDetails }: UserTableProps) {
                         <li>
                           <a className="text-error">
                             <UserX className="h-4 w-4" /> Suspend
+                          </a>
+                        </li>
+                        <li>
+                          <a
+                            className="text-error"
+                            onClick={() => onDeleteUser(user)}
+                          >
+                            <Trash2 className="h-4 w-4" /> Delete User
                           </a>
                         </li>
                       </ul>
