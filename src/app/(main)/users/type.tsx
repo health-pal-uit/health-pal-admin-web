@@ -41,4 +41,5 @@ export type User = {
   phone: string;
   gender: string;
   birthDate: string;
+  birthDateRaw?: string | null; // For age calculation
 };
