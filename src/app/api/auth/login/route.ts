@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 
-const EXTERNAL_API_URL = "http://localhost:3001/auth/login";
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password } = body;
 
-    const apiRes = await fetch(EXTERNAL_API_URL, {
+    const baseUrl = process.env.BACKEND_API_URL;
+
+    if (!baseUrl) {
+      return NextResponse.json(
+        {
+          message: "Server configuration error: Missing BACKEND_API_URL",
+        },
+        { status: 500 },
+      );
+    }
+
+    const apiRes = await fetch(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -47,6 +56,8 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
+    console.error("Login Proxy Error:", error);
+
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },

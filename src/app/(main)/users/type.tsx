@@ -16,6 +16,18 @@ export type ApiUser = {
   google_fit_token_expires_at: string | null;
   google_fit_email: string | null;
   hashed_password?: string | null;
+  role?: {
+    id: string;
+    name: string;
+    created_at: string;
+    deleted_at: string | null;
+  };
+};
+
+export type PaginationData = {
+  total: number;
+  page: number;
+  limit: number;
 };
 
 export type User = {
@@ -29,4 +41,5 @@ export type User = {
   phone: string;
   gender: string;
   birthDate: string;
+  birthDateRaw?: string | null; // For age calculation
 };

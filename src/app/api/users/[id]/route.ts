@@ -1,23 +1,22 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function GET(request: Request) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const token = (await cookies()).get("auth_token")?.value;
 
   if (!token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = searchParams.get("page") || "1";
-  const limit = searchParams.get("limit") || "10";
-  const baseUrl = process.env.BACKEND_API_URL;
-
-  const url = `${baseUrl}/users?page=${page}&limit=${limit}`;
+  const { id } = await params;
 
   try {
-    const apiRes = await fetch(url, {
-      method: "GET",
+    const baseUrl = process.env.BACKEND_API_URL;
+    const apiRes = await fetch(`${baseUrl}/users/${id}`, {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -28,10 +27,11 @@ export async function GET(request: Request) {
 
     if (!apiRes.ok) {
       return NextResponse.json(
-        { message: data.message || "Failed to fetch users" },
+        { message: data.message || "Failed to delete user" },
         { status: data.statusCode || 500 },
       );
     }
+
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
