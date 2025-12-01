@@ -1,7 +1,7 @@
-import { Ingredient } from "../type";
+import { ApprovedIngredient } from "../type";
 
 interface AddEditModalProps {
-  ingredient: Ingredient | null;
+  ingredient: ApprovedIngredient | null;
   onClose: () => void;
 }
 
@@ -35,13 +35,13 @@ export function AddEditIngredientModal({
           </div>
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Category</span>
+              <span className="label-text">Tags (comma-separated)</span>
             </label>
             <input
               type="text"
-              placeholder="e.g., Meat"
+              placeholder="e.g., meat, protein"
               className="input input-bordered"
-              defaultValue={ingredient?.category}
+              defaultValue={ingredient?.tags?.join(", ")}
             />
           </div>
           <div className="form-control">
@@ -52,7 +52,7 @@ export function AddEditIngredientModal({
               type="number"
               placeholder="165"
               className="input input-bordered"
-              defaultValue={ingredient?.calories}
+              defaultValue={ingredient?.kcal_per_100gr}
             />
           </div>
           <div className="form-control">
@@ -63,7 +63,7 @@ export function AddEditIngredientModal({
               type="number"
               placeholder="31"
               className="input input-bordered"
-              defaultValue={ingredient?.protein}
+              defaultValue={ingredient?.protein_per_100gr}
             />
           </div>
           <div className="form-control">
@@ -74,7 +74,7 @@ export function AddEditIngredientModal({
               type="number"
               placeholder="0"
               className="input input-bordered"
-              defaultValue={ingredient?.carbs}
+              defaultValue={ingredient?.carbs_per_100gr}
             />
           </div>
           <div className="form-control">
@@ -85,7 +85,28 @@ export function AddEditIngredientModal({
               type="number"
               placeholder="3.6"
               className="input input-bordered"
-              defaultValue={ingredient?.fat}
+              defaultValue={ingredient?.fat_per_100gr}
+            />
+          </div>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Fiber (g)</span>
+            </label>
+            <input
+              type="number"
+              placeholder="0"
+              className="input input-bordered"
+              defaultValue={ingredient?.fiber_per_100gr}
+            />
+          </div>
+          <div className="form-control col-span-2">
+            <label className="label">
+              <span className="label-text">Notes (optional)</span>
+            </label>
+            <textarea
+              placeholder="Additional information..."
+              className="textarea textarea-bordered"
+              defaultValue={ingredient?.notes || ""}
             />
           </div>
         </form>

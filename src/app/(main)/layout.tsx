@@ -15,7 +15,6 @@ export default function MainLayout({
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated by attempting to verify token
     const checkAuth = async () => {
       try {
         const res = await fetch("/api/users?page=1&limit=1");
@@ -35,7 +34,6 @@ export default function MainLayout({
     checkAuth();
   }, [router]);
 
-  // Show loading screen while checking authentication
   if (isChecking) {
     return (
       <div className="flex h-screen items-center justify-center bg-base-200">

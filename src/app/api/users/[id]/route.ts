@@ -14,8 +14,7 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const baseUrl = process.env.BACKEND_API_URL;
-    const apiRes = await fetch(`${baseUrl}/users/${id}`, {
+    const apiRes = await fetch(`${process.env.BACKEND_API_URL}/users/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
