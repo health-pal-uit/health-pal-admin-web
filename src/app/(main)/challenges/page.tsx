@@ -20,41 +20,91 @@ export default function ChallengesPage() {
     null,
   );
 
-  useEffect(() => {
-    const fetchChallenges = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          `/api/challenges?page=${currentPage}&limit=${limit}`,
-        );
+  const fetchChallenges = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(
+        `/api/challenges?page=${currentPage}&limit=${limit}`,
+      );
 
-        if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          router.push("/login");
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          toast.error(data.message || "Failed to fetch challenges");
-          return;
-        }
-
-        const challengesList = Array.isArray(data.data) ? data.data : [];
-        setChallenges(challengesList);
-        setTotalChallenges(challengesList.length);
-        setTotalPages(Math.ceil(challengesList.length / limit));
-      } catch (error) {
-        toast.error("An error occurred while fetching challenges.");
-        console.error(error);
-      } finally {
-        setIsLoading(false);
+      if (res.status === 401) {
+        toast.error("Session expired. Please login again.");
+        router.push("/login");
+        return;
       }
-    };
 
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to fetch challenges");
+        return;
+      }
+
+      const challengesList = Array.isArray(data.data) ? data.data : [];
+      setChallenges(challengesList);
+      setTotalChallenges(challengesList.length);
+      setTotalPages(Math.ceil(challengesList.length / limit));
+    } catch (error) {
+      toast.error("An error occurred while fetching challenges.");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchChallenges();
   }, [currentPage, limit, router]);
+
+  const handleSaveChallenge = async (data: {
+    name: string;
+    note: string;
+    difficulty: string;
+    image?: File;
+  }) => {
+    if (!editingChallenge) return;
+
+    try {
+      const body: Record<string, string> = {
+        name: data.name,
+        difficulty: data.difficulty,
+      };
+
+      if (data.note) {
+        body.note = data.note;
+      }
+
+      // TODO: Handle image upload separately if needed
+      // Image upload might require multipart/form-data or a separate endpoint
+
+      const res = await fetch(`/api/challenges/${editingChallenge.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.status === 401) {
+        toast.error("Session expired. Please login again.");
+        router.push("/login");
+        return;
+      }
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast.error(result.message || "Failed to update challenge");
+        return;
+      }
+
+      toast.success("Challenge updated successfully!");
+      await fetchChallenges();
+    } catch (error) {
+      toast.error("An error occurred while updating the challenge.");
+      console.error(error);
+    }
+  };
 
   const handleAddEdit = (challenge?: Challenge) => {
     setEditingChallenge(challenge || null);
@@ -153,6 +203,7 @@ export default function ChallengesPage() {
       <AddEditChallengeModal
         challenge={editingChallenge}
         onClose={handleCloseModal}
+        onSave={handleSaveChallenge}
       />
     </div>
   );
