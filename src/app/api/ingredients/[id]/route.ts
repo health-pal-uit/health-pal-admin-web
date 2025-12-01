@@ -1,36 +1,40 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function GET(request: Request) {
+const EXTERNAL_API_URL = "http://localhost:3001/ingredients";
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const token = (await cookies()).get("auth_token")?.value;
 
   if (!token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = searchParams.get("page") || "1";
-  const limit = searchParams.get("limit") || "10";
-
-  const url = `${process.env.BACKEND_API_URL}/users?page=${page}&limit=${limit}`;
+  const { id } = await params;
+  const body = await request.json();
 
   try {
-    const apiRes = await fetch(url, {
-      method: "GET",
+    const apiRes = await fetch(`${EXTERNAL_API_URL}/${id}`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify(body),
     });
 
     const data = await apiRes.json();
 
     if (!apiRes.ok) {
       return NextResponse.json(
-        { message: data.message || "Failed to fetch users" },
+        { message: data.message || "Failed to update ingredient" },
         { status: data.statusCode || 500 },
       );
     }
+
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(

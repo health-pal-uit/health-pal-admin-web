@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+const EXTERNAL_API_URL = "http://localhost:3001/ingredients/admin";
+
 export async function GET(request: Request) {
   const token = (await cookies()).get("auth_token")?.value;
 
@@ -12,7 +14,7 @@ export async function GET(request: Request) {
   const page = searchParams.get("page") || "1";
   const limit = searchParams.get("limit") || "10";
 
-  const url = `${process.env.BACKEND_API_URL}/users?page=${page}&limit=${limit}`;
+  const url = `${EXTERNAL_API_URL}?page=${page}&limit=${limit}`;
 
   try {
     const apiRes = await fetch(url, {
@@ -27,12 +29,12 @@ export async function GET(request: Request) {
 
     if (!apiRes.ok) {
       return NextResponse.json(
-        { message: data.message || "Failed to fetch users" },
+        { message: data.message || "Failed to fetch unverified ingredients" },
         { status: data.statusCode || 500 },
       );
     }
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
