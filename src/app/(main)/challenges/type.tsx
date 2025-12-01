@@ -1,17 +1,29 @@
-export type ChallengeStatus = "active" | "upcoming";
+export type Difficulty = "easy" | "medium" | "hard";
 
-export type Challenge = {
-  id: number;
-  title: string;
-  description: string;
-  duration: string;
-  participants: number;
-  status: ChallengeStatus;
-  startDate: string;
-  endDate: string;
+export interface ActivityRecord {
+  id: string;
+  // Add other activity record fields as needed
+}
+
+export interface Challenge {
+  id: string;
+  name: string;
+  note: string | null;
+  image_url: string | { url: string } | null;
+  difficulty: Difficulty;
+  created_at: string;
+  deleted_at: string | null;
+  activity_records: ActivityRecord[];
+}
+
+export const difficultyColors: Record<Difficulty, string> = {
+  easy: "badge-success",
+  medium: "badge-warning",
+  hard: "badge-error",
 };
 
-export const statusColors: Record<ChallengeStatus, string> = {
-  active: "badge-primary",
-  upcoming: "badge-ghost",
+export const difficultyLabels: Record<Difficulty, string> = {
+  easy: "Easy",
+  medium: "Medium",
+  hard: "Hard",
 };

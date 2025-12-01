@@ -1,58 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Challenge } from "./type";
 import { ChallengeCard } from "./components/challenge-card";
 import { AddEditChallengeModal } from "./components/add-edit-modal";
 
-const mockChallenges: Challenge[] = [
-  {
-    id: 1,
-    title: "30 Day Detox",
-    description: "Join a 30-day detox program",
-    duration: "30 days",
-    participants: 245,
-    status: "active",
-    startDate: "01/11/2024",
-    endDate: "30/11/2024",
-  },
-  {
-    id: 2,
-    title: "7 Day Plank Challenge",
-    description: "Plank exercise every day for a week",
-    duration: "7 days",
-    participants: 432,
-    status: "active",
-    startDate: "01/11/2024",
-    endDate: "07/11/2024",
-  },
-  {
-    id: 3,
-    title: "Vegan Week",
-    description: "Try a complete plant-based diet",
-    duration: "7 days",
-    participants: 189,
-    status: "upcoming",
-    startDate: "15/11/2024",
-    endDate: "21/11/2024",
-  },
-  {
-    id: 4,
-    title: "10,000 Steps Daily",
-    description: "Walk 10,000 steps every day for 30 days",
-    duration: "30 days",
-    participants: 567,
-    status: "active",
-    startDate: "01/11/2024",
-    endDate: "30/11/2024",
-  },
-];
-
 export default function ChallengesPage() {
+  const router = useRouter();
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalChallenges, setTotalChallenges] = useState(0);
+  const [limit] = useState(10);
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(
     null,
   );
+
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `/api/challenges?page=${currentPage}&limit=${limit}`,
+        );
+
+        if (res.status === 401) {
+          toast.error("Session expired. Please login again.");
+          router.push("/login");
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast.error(data.message || "Failed to fetch challenges");
+          return;
+        }
+
+        const challengesList = Array.isArray(data.data) ? data.data : [];
+        setChallenges(challengesList);
+        setTotalChallenges(challengesList.length);
+        setTotalPages(Math.ceil(challengesList.length / limit));
+      } catch (error) {
+        toast.error("An error occurred while fetching challenges.");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchChallenges();
+  }, [currentPage, limit, router]);
 
   const handleAddEdit = (challenge?: Challenge) => {
     setEditingChallenge(challenge || null);
@@ -87,15 +89,66 @@ export default function ChallengesPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {mockChallenges.map((challenge) => (
-          <ChallengeCard
-            key={challenge.id}
-            challenge={challenge}
-            onEdit={handleAddEdit}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      ) : challenges.length === 0 ? (
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="text-center py-8 text-base-content/50">
+              No challenges found
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {challenges.map((challenge) => (
+            <ChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              onEdit={handleAddEdit}
+            />
+          ))}
+        </div>
+      )}
+
+      {!isLoading && totalPages > 1 && (
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-base-content/70">
+                Showing {(currentPage - 1) * limit + 1} to{" "}
+                {Math.min(currentPage * limit, totalChallenges)} of{" "}
+                {totalChallenges} challenges
+              </div>
+              <div className="join">
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  «
+                </button>
+                <button className="join-item btn btn-sm">
+                  Page {currentPage} of {totalPages}
+                </button>
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AddEditChallengeModal
         challenge={editingChallenge}
