@@ -158,6 +158,26 @@ export default function IngredientsPage() {
     }, 300);
   };
 
+  const handleIngredientSuccess = () => {
+    const fetchIngredients = async () => {
+      try {
+        const res = await fetch(
+          `/api/ingredients?page=${currentPage}&limit=${limit}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const ingredientsList = Array.isArray(data.data.data)
+            ? data.data.data
+            : [];
+          setApprovedIngredients(ingredientsList);
+        }
+      } catch (error) {
+        console.error("Error refetching ingredients:", error);
+      }
+    };
+    fetchIngredients();
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -265,6 +285,7 @@ export default function IngredientsPage() {
       <AddEditIngredientModal
         ingredient={editingIngredient}
         onClose={handleCloseModal}
+        onSuccess={handleIngredientSuccess}
       />
 
       <ReviewIngredientModal
