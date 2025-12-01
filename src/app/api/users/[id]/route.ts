@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const EXTERNAL_API_URL = "http://localhost:3001/users";
-
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -16,7 +14,8 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const apiRes = await fetch(`${EXTERNAL_API_URL}/${id}`, {
+    const baseUrl = process.env.BACKEND_API_URL;
+    const apiRes = await fetch(`${baseUrl}/users/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
