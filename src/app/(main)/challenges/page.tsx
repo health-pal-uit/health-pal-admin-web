@@ -62,8 +62,6 @@ export default function ChallengesPage() {
     difficulty: string;
     image?: File;
   }) => {
-    if (!editingChallenge) return;
-
     try {
       const body: Record<string, string> = {
         name: data.name,
@@ -77,8 +75,14 @@ export default function ChallengesPage() {
       // TODO: Handle image upload separately if needed
       // Image upload might require multipart/form-data or a separate endpoint
 
-      const res = await fetch(`/api/challenges/${editingChallenge.id}`, {
-        method: "PATCH",
+      const isEdit = !!editingChallenge;
+      const url = isEdit
+        ? `/api/challenges/${editingChallenge.id}`
+        : "/api/challenges";
+      const method = isEdit ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -94,14 +98,19 @@ export default function ChallengesPage() {
       const result = await res.json();
 
       if (!res.ok) {
-        toast.error(result.message || "Failed to update challenge");
+        toast.error(
+          result.message ||
+            `Failed to ${isEdit ? "update" : "create"} challenge`,
+        );
         return;
       }
 
-      toast.success("Challenge updated successfully!");
+      toast.success(
+        `Challenge ${isEdit ? "updated" : "created"} successfully!`,
+      );
       await fetchChallenges();
     } catch (error) {
-      toast.error("An error occurred while updating the challenge.");
+      toast.error("An error occurred while saving the challenge.");
       console.error(error);
     }
   };
