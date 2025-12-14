@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  MoreVertical,
-  Pencil,
-  Trash2,
-  Activity as ActivityIcon,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { Activity } from "./type";
 import Header from "@/src/components/shared/Header";
+import { ActivityTable } from "./components/activity-table";
+import { DeletedActivitiesTable } from "./components/deleted-activities-table";
+import { AddEditActivityModal } from "./components/add-edit-modal";
 
 const mockActivities = [
   {
@@ -89,15 +86,6 @@ export default function ActivitiesPage() {
     }, 300);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   return (
     <div className="flex flex-col gap-8">
       <Header
@@ -118,203 +106,14 @@ export default function ActivitiesPage() {
         />
       </label>
 
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title mb-4">Active Activities</h2>
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Activity Name</th>
-                  <th>MET Value</th>
-                  <th>Categories</th>
-                  <th>Created At</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredActive.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="text-center py-8 text-base-content/50"
-                    >
-                      No activities found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredActive.map((activity) => (
-                    <tr key={activity.id} className="hover">
-                      <td>
-                        <div className="flex items-center gap-2 font-semibold">
-                          <ActivityIcon className="h-4 w-4 text-primary" />
-                          {activity.name}
-                        </div>
-                      </td>
-                      <td>{activity.met_value.toFixed(1)}</td>
-                      <td>
-                        <div className="flex flex-wrap gap-1">
-                          {activity.categories.map((category, idx) => (
-                            <div
-                              key={idx}
-                              className="badge badge-outline badge-primary badge-sm"
-                            >
-                              {category}
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td>{formatDate(activity.created_at)}</td>
-                      <td>
-                        <div className="dropdown dropdown-end">
-                          <button
-                            tabIndex={0}
-                            className="btn btn-ghost btn-circle btn-sm"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                          <ul
-                            tabIndex={0}
-                            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10"
-                          >
-                            <li>
-                              <a onClick={() => handleAddEdit(activity)}>
-                                <Pencil className="h-4 w-4" /> Edit
-                              </a>
-                            </li>
-                            <li>
-                              <a className="text-error">
-                                <Trash2 className="h-4 w-4" /> Delete
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <ActivityTable activities={filteredActive} onEdit={handleAddEdit} />
 
-      {deletedActivities.length > 0 && (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title mb-4">Deleted Activities</h2>
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Activity Name</th>
-                    <th>MET Value</th>
-                    <th>Categories</th>
-                    <th>Created At</th>
-                    <th>Deleted At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deletedActivities.map((activity) => (
-                    <tr key={activity.id} className="opacity-60">
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <ActivityIcon className="h-4 w-4 text-base-content/40" />
-                          {activity.name}
-                        </div>
-                      </td>
-                      <td>{activity.met_value.toFixed(1)}</td>
-                      <td>
-                        <div className="flex flex-wrap gap-1">
-                          {activity.categories.map((category, idx) => (
-                            <div
-                              key={idx}
-                              className="badge badge-outline badge-ghost badge-sm"
-                            >
-                              {category}
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td>{formatDate(activity.created_at)}</td>
-                      <td>
-                        {activity.deleted_at && formatDate(activity.deleted_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeletedActivitiesTable activities={deletedActivities} />
 
-      <dialog id="add_edit_activity_modal" className="modal modal-middle">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">
-            {editingActivity ? "Edit Activity" : "Add New Activity"}
-          </h3>
-          <p className="py-2 text-base-content/70">
-            Enter activity details and MET (Metabolic Equivalent of Task) value
-          </p>
-
-          <form className="space-y-4 mt-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Activity Name</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., Running, Swimming"
-                defaultValue={editingActivity?.name}
-                className="input input-bordered"
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">MET Value</span>
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                placeholder="e.g., 9.8"
-                defaultValue={editingActivity?.met_value}
-                className="input input-bordered"
-              />
-              <label className="label">
-                <span className="label-text-alt text-base-content/60">
-                  MET represents the energy cost of physical activities
-                </span>
-              </label>
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Categories</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., Cardio, Outdoor (comma-separated)"
-                defaultValue={editingActivity?.categories?.join(", ")}
-                className="input input-bordered"
-              />
-            </div>
-          </form>
-
-          <div className="modal-action">
-            <button className="btn btn-ghost" onClick={handleCloseModal}>
-              Cancel
-            </button>
-            <button className="btn btn-primary" onClick={handleCloseModal}>
-              {editingActivity ? "Update Activity" : "Add Activity"}
-            </button>
-          </div>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button onClick={handleCloseModal}>close</button>
-        </form>
-      </dialog>
+      <AddEditActivityModal
+        activity={editingActivity}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
