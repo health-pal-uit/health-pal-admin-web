@@ -9,6 +9,7 @@ import {
   Trophy,
   MessageSquare,
   LogOut,
+  Activity,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,6 +35,12 @@ const menuItems = [
     label: "Ingredients",
     icon: Apple,
     href: "/ingredients",
+  },
+  {
+    id: "activities",
+    label: "Activities",
+    icon: Activity,
+    href: "/activities",
   },
   { id: "medals", label: "Medals", icon: Award, href: "/medals" },
   {

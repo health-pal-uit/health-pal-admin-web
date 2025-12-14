@@ -39,7 +39,6 @@ export default function IngredientsPage() {
   const [totalPendingIngredients, setTotalPendingIngredients] = useState(0);
   const [limit] = useState(10);
 
-  // Fetch approved ingredients
   useEffect(() => {
     if (activeTab !== "approved") return;
 
@@ -80,7 +79,6 @@ export default function IngredientsPage() {
     fetchIngredients();
   }, [currentPage, limit, activeTab, router]);
 
-  // Fetch pending/unverified ingredients
   useEffect(() => {
     if (activeTab !== "pending") return;
 
@@ -107,7 +105,6 @@ export default function IngredientsPage() {
         const ingredientsList = Array.isArray(data.data.data)
           ? data.data.data
           : [];
-        // Filter only unverified ingredients
         const unverifiedList = ingredientsList.filter(
           (ing: ApprovedIngredient) => !ing.is_verified,
         );
@@ -266,7 +263,6 @@ export default function IngredientsPage() {
         </>
       )}
 
-      {/* Pagination for pending ingredients */}
       {activeTab === "pending" && !isLoading && pendingTotalPages > 1 && (
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
@@ -306,7 +302,6 @@ export default function IngredientsPage() {
         </div>
       )}
 
-      {/* Pagination for approved ingredients */}
       {activeTab === "approved" && !isLoading && totalPages > 1 && (
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
