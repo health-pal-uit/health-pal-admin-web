@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, CheckCircle, Clock } from "lucide-react";
+import { Search, CheckCircle, Clock } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { ApprovedIngredient } from "./type";
 import { ApprovedTable } from "./components/approved-table";
 import { PendingTable } from "./components/pending-table";
 import { AddEditIngredientModal } from "./components/add-edit-modal";
 import { ReviewIngredientModal } from "./components/review-modal";
+import Header from "@/src/components/shared/Header";
 
 export default function IngredientsPage() {
   const router = useRouter();
@@ -185,20 +186,12 @@ export default function IngredientsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-base-content">
-            Ingredient Management
-          </h1>
-          <p className="text-base-content/70">
-            Manage nutritional information for ingredients
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={handleOpenAddModal}>
-          <Plus className="h-4 w-4" />
-          Add Ingredient
-        </button>
-      </div>
+      <Header
+        tabName="Ingredient Management"
+        description="Manage nutritional information for ingredients"
+        buttonName="Ingredient"
+        onAddClick={handleOpenAddModal}
+      />
 
       <div className="flex w-fit items-center gap-2 p-1 rounded-full bg-base-300">
         <button

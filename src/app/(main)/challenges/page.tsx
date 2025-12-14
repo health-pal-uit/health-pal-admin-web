@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Challenge } from "./type";
 import { ChallengeCard } from "./components/challenge-card";
 import { AddEditChallengeModal } from "./components/add-edit-modal";
+import Header from "@/src/components/shared/Header";
 
 export default function ChallengesPage() {
   const router = useRouter();
@@ -72,9 +72,6 @@ export default function ChallengesPage() {
         body.note = data.note;
       }
 
-      // TODO: Handle image upload separately if needed
-      // Image upload might require multipart/form-data or a separate endpoint
-
       const isEdit = !!editingChallenge;
       const url = isEdit
         ? `/api/challenges/${editingChallenge.id}`
@@ -133,20 +130,12 @@ export default function ChallengesPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-base-content">
-            Challenge Management
-          </h1>
-          <p className="text-base-content/70">
-            Create and manage health challenges for users
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={() => handleAddEdit()}>
-          <Plus className="h-4 w-4" />
-          Create Challenge
-        </button>
-      </div>
+      <Header
+        tabName="Challenge Management"
+        description="Create and manage health challenges for users"
+        buttonName="Challenge"
+        onAddClick={() => handleAddEdit()}
+      />
 
       {isLoading ? (
         <div className="flex justify-center items-center h-64">

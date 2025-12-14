@@ -1,34 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Star,
-  Eye,
-  Plus,
-} from "lucide-react";
+import { Search, Clock, CheckCircle, XCircle, Star, Eye } from "lucide-react";
 import Image from "next/image";
 import { RecipeDetailModal } from "./components/recipe-detail";
-
-type RecipeStatus = "pending" | "approved" | "rejected";
-export type Recipe = {
-  id: number;
-  title: string;
-  author: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  status: RecipeStatus;
-  submittedDate: string;
-  cookTime: string;
-  difficulty: string;
-  rating?: number;
-  imageUrl?: string;
-};
+import { Recipe, RecipeStatus } from "./type";
+import Header from "@/src/components/shared/Header";
 
 const mockRecipes: Recipe[] = [
   {
@@ -122,20 +99,11 @@ export default function RecipesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-base-content">
-            Recipe & Meal Moderation
-          </h1>
-          <p className="text-base-content/70">
-            Review and approve user-contributed recipes
-          </p>
-        </div>
-        <button className="btn btn-primary">
-          <Plus className="h-4 w-4" />
-          Add Recipe
-        </button>
-      </div>
+      <Header
+        tabName="Recipe & Meal Moderation"
+        description="Review and approve user-contributed recipes"
+        buttonName="Recipe"
+      />
 
       <div className="flex w-fit items-center gap-2 p-1 rounded-full bg-base-300">
         <button

@@ -3,13 +3,13 @@
 import { useState } from "react";
 import {
   Search,
-  Plus,
   MoreVertical,
   Pencil,
   Trash2,
   Activity as ActivityIcon,
 } from "lucide-react";
 import { Activity } from "./type";
+import Header from "@/src/components/shared/Header";
 
 const mockActivities = [
   {
@@ -100,20 +100,12 @@ export default function ActivitiesPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-base-content">
-            Activities Management
-          </h1>
-          <p className="text-base-content/70">
-            Manage physical activities and their MET values
-          </p>
-        </div>
-        <button className="btn btn-primary" onClick={() => handleAddEdit()}>
-          <Plus className="h-4 w-4" />
-          Add Activity
-        </button>
-      </div>
+      <Header
+        tabName="Activities Management"
+        description="Manage physical activities and their MET values"
+        buttonName="Activity"
+        onAddClick={() => handleAddEdit()}
+      />
 
       <label className="input input-bordered flex items-center gap-2 rounded-full">
         <Search className="h-5 w-5 text-base-content/60" />
