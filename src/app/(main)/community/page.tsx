@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Post, PostStatus } from "./type";
 import { PostCard } from "./components/post-card";
 import { ReviewModal } from "./components/review-modal";
+import Header from "@/src/components/shared/Header";
 
 export default function CommunityPage() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -106,16 +107,11 @@ export default function CommunityPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-base-content">
-            Community Moderation
-          </h1>
-          <p className="text-base-content/70">
-            Review and moderate posts and comments from the community
-          </p>
-        </div>
-      </div>
+      <Header
+        tabName="Community Moderation"
+        description="Review and moderate posts and comments from the community"
+        buttonName="Posts"
+      ></Header>
 
       <div className="flex w-fit items-center gap-2 p-1 rounded-full bg-base-300">
         <button

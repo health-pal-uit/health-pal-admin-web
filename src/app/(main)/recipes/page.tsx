@@ -11,6 +11,8 @@ import { RecipeList } from "./components/recipe-list";
 import { PaginationControls } from "./components/pagination-controls";
 import { RecipeDetailModal } from "./components/recipe-detail";
 import { ReviewModal } from "./components/review-modal";
+import { AddMealModal } from "./components/add-meal-modal";
+import { Plus } from "lucide-react";
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +26,7 @@ export default function RecipesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecipes, setTotalRecipes] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
   const limit = 10;
 
   useEffect(() => {
@@ -48,7 +51,6 @@ export default function RecipesPage() {
         setRecipes(processedRecipes);
         setTotalRecipes(result.data.total || 0);
 
-        // Count pending recipes
         const pending = processedRecipes.filter(
           (r: Recipe) => r.status === "pending",
         ).length;
@@ -126,13 +128,36 @@ export default function RecipesPage() {
     }
   };
 
+  const handleOpenAddModal = () => {
+    setShowAddModal(true);
+    (
+      document.getElementById("add_meal_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    (document.getElementById("add_meal_modal") as HTMLDialogElement)?.close();
+  };
+
+  const handleAddSuccess = () => {
+    toast.success("Meal created successfully!");
+    fetchRecipes();
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Header
         tabName="Recipe & Meal Moderation"
         description="Review and approve user-contributed recipes"
-        buttonName="Recipe"
-      />
+        buttonName="Meals With Recipes"
+        onAddClick={() => {}}
+      >
+        <button className="btn btn-primary" onClick={handleOpenAddModal}>
+          <Plus className="h-4 w-4" />
+          Add Meals
+        </button>
+      </Header>
 
       <RecipeTabs
         activeTab={activeTab}
@@ -166,6 +191,11 @@ export default function RecipesPage() {
         action={reviewAction}
         onClose={handleCloseModal}
         onSubmit={handleReviewSubmit}
+      />
+
+      <AddMealModal
+        onClose={handleCloseAddModal}
+        onSuccess={handleAddSuccess}
       />
     </div>
   );
