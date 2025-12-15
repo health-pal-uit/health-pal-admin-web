@@ -17,7 +17,7 @@ export function ReviewModal({ post, action, onClose }: ReviewModalProps) {
           {action === "approve" ? "Approve Post" : "Reject/Delete Post"}
         </h3>
         <p className="py-2 text-base-content/80">
-          Post from {post.author} (@{post.username})
+          Post from {post.user.fullname} (@{post.user.username})
         </p>
 
         <div className="space-y-4 py-4">
@@ -32,7 +32,7 @@ export function ReviewModal({ post, action, onClose }: ReviewModalProps) {
               </span>
             </label>
             <textarea
-              className="textarea textarea-bordered h-24"
+              className="textarea textarea-bordered h-24 w-full"
               placeholder="Enter reason or notes..."
             ></textarea>
           </div>

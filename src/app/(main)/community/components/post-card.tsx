@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { MoreVertical, Eye, CheckCircle, XCircle, Flag } from "lucide-react";
+import { MoreVertical, Eye, CheckCircle, XCircle } from "lucide-react";
 import { Post } from "../type";
 
 interface PostCardProps {
@@ -11,86 +11,106 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onReview, onViewDetails }: PostCardProps) {
+  const getStatus = () => {
+    if (post.deleted_at) return "rejected";
+    if (post.is_approved) return "approved";
+    return "pending";
+  };
+
+  const status = getStatus();
+
   const cardBorderColor = () => {
-    if (post.status === "flagged") return "border-error";
-    if (post.status === "pending") return "border-warning/50";
+    if (status === "pending") return "border-warning/50";
+    if (status === "rejected") return "border-error/50";
     return "border-base-200";
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} days ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  const getAttachTypeBadge = () => {
+    if (post.attach_type === "none") return null;
+
+    const badges = {
+      meal: "badge-info",
+      ingredient: "badge-success",
+      challenge: "badge-warning",
+      medal: "badge-primary",
+    };
+
+    return (
+      <span className={`badge badge-sm ${badges[post.attach_type]}`}>
+        {post.attach_type}
+      </span>
+    );
   };
 
   return (
     <div className={`card bg-base-100 shadow-xl border ${cardBorderColor()}`}>
       <div className="card-body">
         <div className="flex gap-4">
-          <div className="avatar placeholder">
-            <div
-              className={`rounded-full w-12 ${
-                post.status === "flagged"
-                  ? "bg-error/10 text-error"
-                  : "bg-primary/10 text-primary"
-              }`}
-            >
-              <span>{post.author.charAt(0)}</span>
+          <div className="avatar">
+            <div className="w-12 h-12 rounded-full">
+              <Image
+                src={post.user.avatar_url || "/image/default-avatar.png"}
+                alt={post.user.fullname}
+                width={48}
+                height={48}
+                className="rounded-full"
+              />
             </div>
           </div>
 
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h4 className="font-bold text-base-content">{post.author}</h4>
+                <h4 className="font-bold text-base-content flex items-center gap-2">
+                  {post.user.fullname}
+                  {getAttachTypeBadge()}
+                </h4>
                 <p className="text-sm text-base-content/60">
-                  {post.username} • {post.createdAt}
+                  @{post.user.username} • {formatDate(post.created_at)}
                 </p>
               </div>
 
-              {post.status === "flagged" ? (
-                <div className="badge badge-error gap-1">
-                  <Flag className="h-3 w-3" />
-                  {post.reportCount} reports
-                </div>
-              ) : (
-                <div className="dropdown dropdown-end">
-                  <button
-                    tabIndex={0}
-                    className="btn btn-ghost btn-circle btn-sm"
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
-                  <ul
-                    tabIndex={0}
-                    className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10"
-                  >
-                    <li>
-                      <a onClick={() => onViewDetails(post)}>
-                        <Eye className="h-4 w-4" /> View Details
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              )}
+              <div className="dropdown dropdown-end">
+                <button
+                  tabIndex={0}
+                  className="btn btn-ghost btn-circle btn-sm"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10"
+                >
+                  <li>
+                    <a onClick={() => onViewDetails(post)}>
+                      <Eye className="h-4 w-4" /> View Details
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
         <p className="text-base-content py-4">{post.content}</p>
 
-        {post.hasImage && post.imageUrl && (
-          <figure className="mb-4 rounded-lg overflow-hidden">
-            <Image
-              src={post.imageUrl}
-              alt="Post image"
-              width={500}
-              height={300}
-              className="w-full h-64 object-cover"
-            />
-          </figure>
-        )}
-
-        <div className="flex items-center gap-4 text-base-content/60 text-sm mb-4">
-          <span>{post.likes} likes</span>
-          <span>{post.comments} comments</span>
-        </div>
-
-        {post.status === "pending" && (
+        {status === "pending" && (
           <div className="card-actions justify-start gap-2">
             <button
               className="btn btn-sm btn-outline btn-success rounded-full"
@@ -103,23 +123,6 @@ export function PostCard({ post, onReview, onViewDetails }: PostCardProps) {
               onClick={() => onReview(post, "reject")}
             >
               <XCircle className="h-4 w-4" /> Reject
-            </button>
-          </div>
-        )}
-
-        {post.status === "flagged" && (
-          <div className="card-actions justify-start gap-2">
-            <button
-              className="btn btn-sm btn-outline btn-ghost rounded-full"
-              onClick={() => onViewDetails(post)}
-            >
-              <Eye className="h-4 w-4" /> View Reports
-            </button>
-            <button
-              className="btn btn-sm btn-outline btn-error rounded-full"
-              onClick={() => onReview(post, "reject")}
-            >
-              <XCircle className="h-4 w-4" /> Delete Post
             </button>
           </div>
         )}

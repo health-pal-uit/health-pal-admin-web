@@ -1,104 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, CheckCircle, XCircle, Flag } from "lucide-react";
+import toast from "react-hot-toast";
 import { Post, PostStatus } from "./type";
 import { PostCard } from "./components/post-card";
 import { ReviewModal } from "./components/review-modal";
 
-const mockPosts: Post[] = [
-  {
-    id: 1,
-    author: "Sarah Johnson",
-    username: "@sarah_fitness",
-    content:
-      "Hello everyone! I lost 5kg after 2 months of training and healthy eating. Thank you app for helping me track my progress so detailed!",
-    likes: 45,
-    comments: 12,
-    status: "pending",
-    createdAt: "2 hours ago",
-    reportCount: 0,
-    hasImage: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop",
-  },
-  {
-    id: 2,
-    author: "Michael Chen",
-    username: "@mike_gym",
-    content:
-      "Sharing my clean eating meal plan for this week. DM me if you need it!",
-    likes: 23,
-    comments: 8,
-    status: "pending",
-    createdAt: "5 hours ago",
-    reportCount: 0,
-    hasImage: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop",
-  },
-  {
-    id: 3,
-    author: "Emma Williams",
-    username: "@emma_yoga",
-    content:
-      "This morning yoga session was amazing! Feeling light and energized.",
-    likes: 67,
-    comments: 15,
-    status: "approved",
-    createdAt: "1 day ago",
-    reportCount: 0,
-    hasImage: false,
-  },
-  {
-    id: 4,
-    author: "David Martinez",
-    username: "@david_runner",
-    content: "Just completed a 10km run. Next goal is 15km!",
-    likes: 89,
-    comments: 21,
-    status: "approved",
-    createdAt: "1 day ago",
-    reportCount: 0,
-    hasImage: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=400&h=300&fit=crop",
-  },
-  {
-    id: 5,
-    author: "Spam User",
-    username: "@spam_account",
-    content:
-      "Buy fast weight loss pills, 100% effective. DM for more details!!!",
-    likes: 2,
-    comments: 0,
-    status: "flagged",
-    createdAt: "30 minutes ago",
-    reportCount: 5,
-    hasImage: false,
-  },
-];
-
-// --- Component Trang ---
 export default function CommunityPage() {
-  // --- STATE QUẢN LÝ TRANG ---
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<PostStatus>("pending");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(
     null,
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10;
 
-  // --- Lọc dữ liệu ---
-  const filteredPosts = mockPosts.filter(
-    (post) =>
-      post.status === activeTab &&
-      (post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.username.toLowerCase().includes(searchQuery.toLowerCase())),
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/posts");
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw Error(result.message || "Failed to fetch posts");
+      }
+
+      setPosts(result.data || []);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      toast.error("Failed to load posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPostStatus = (post: Post): PostStatus => {
+    if (post.deleted_at) return "rejected";
+    if (post.is_approved) return "approved";
+    return "pending";
+  };
+
+  const filteredPosts = posts.filter((post) => {
+    const status = getPostStatus(post);
+    if (status !== activeTab) return false;
+
+    const query = searchQuery.toLowerCase();
+    return (
+      post.content.toLowerCase().includes(query) ||
+      post.user.fullname.toLowerCase().includes(query) ||
+      post.user.username.toLowerCase().includes(query)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const paginatedPosts = filteredPosts.slice(
+    startIndex,
+    startIndex + postsPerPage,
   );
 
-  // --- Hàm xử lý Modal ---
+  const getPendingCount = () =>
+    posts.filter((p) => !p.is_approved && !p.deleted_at).length;
+  const getApprovedCount = () => posts.filter((p) => p.is_approved).length;
+  const getRejectedCount = () => posts.filter((p) => p.deleted_at).length;
+
   const handleReview = (post: Post, action: "approve" | "reject") => {
     setSelectedPost(post);
     setReviewAction(action);
@@ -106,9 +83,8 @@ export default function CommunityPage() {
   };
 
   const handleViewDetails = (post: Post) => {
-    // Tạm thời, View Details cũng sẽ mở Review Modal
     setSelectedPost(post);
-    setReviewAction(null); // Không có action cụ thể
+    setReviewAction(null);
     (document.getElementById("review_modal") as HTMLDialogElement)?.showModal();
   };
 
@@ -120,9 +96,16 @@ export default function CommunityPage() {
     }, 300);
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      {/* 1. PHẦN HEADER */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-base-content">
@@ -132,17 +115,17 @@ export default function CommunityPage() {
             Review and moderate posts and comments from the community
           </p>
         </div>
-        {/* (Không có nút Add) */}
       </div>
 
-      {/* 2. TABS (Dùng style từ trang Recipes) */}
       <div className="flex w-fit items-center gap-2 p-1 rounded-full bg-base-300">
         <button
           className={`btn btn-sm rounded-full gap-2 ${activeTab === "pending" ? "bg-base-100 text-base-content" : "btn-ghost"}`}
           onClick={() => setActiveTab("pending")}
         >
           Pending
-          <div className="badge badge-ghost ml-1">2</div>
+          {getPendingCount() > 0 && (
+            <div className="badge badge-ghost ml-1">{getPendingCount()}</div>
+          )}
         </button>
         <button
           className={`btn btn-sm rounded-full gap-2 ${activeTab === "flagged" ? "bg-base-100 text-base-content" : "btn-ghost"}`}
@@ -150,7 +133,7 @@ export default function CommunityPage() {
         >
           <Flag className="h-4 w-4" />
           Reported
-          <div className="badge badge-error ml-1">1</div>
+          <div className="badge badge-error ml-1">0</div>
         </button>
         <button
           className={`btn btn-sm rounded-full gap-2 ${activeTab === "approved" ? "bg-base-200 text-base-content" : "btn-ghost"}`}
@@ -158,6 +141,9 @@ export default function CommunityPage() {
         >
           <CheckCircle className="h-4 w-4" />
           Approved
+          {getApprovedCount() > 0 && (
+            <div className="badge badge-ghost ml-1">{getApprovedCount()}</div>
+          )}
         </button>
         <button
           className={`btn btn-sm rounded-full gap-2 ${activeTab === "rejected" ? "bg-base-200 text-base-content" : "btn-ghost"}`}
@@ -165,22 +151,23 @@ export default function CommunityPage() {
         >
           <XCircle className="h-4 w-4" />
           Rejected
+          {getRejectedCount() > 0 && (
+            <div className="badge badge-ghost ml-1">{getRejectedCount()}</div>
+          )}
         </button>
       </div>
 
-      {/* 3. THANH TÌM KIẾM */}
       <label className="input input-bordered flex items-center gap-2 rounded-full">
         <Search className="h-5 w-5 text-base-content/60" />
         <input
           type="text"
           className="grow"
-          placeholder="Search posts by content, author, or username..."
+          placeholder="Search posts by content, or username"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </label>
 
-      {/* 4. KHU VỰC NỘI DUNG TABS (Render PostCard) */}
       <div className="space-y-4">
         {filteredPosts.length === 0 && (
           <div className="text-center py-12 text-base-content/60">
@@ -188,7 +175,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {filteredPosts.map((post) => (
+        {paginatedPosts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
@@ -198,7 +185,38 @@ export default function CommunityPage() {
         ))}
       </div>
 
-      {/* --- 5. MODAL (Gọi component con) --- */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2">
+          <button
+            className="btn btn-sm"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                className={`btn btn-sm ${
+                  currentPage === page ? "btn-primary" : "btn-ghost"
+                }`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+          <button
+            className="btn btn-sm"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       <ReviewModal
         post={selectedPost}
         action={reviewAction}
