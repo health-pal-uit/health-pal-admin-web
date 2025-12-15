@@ -2,33 +2,7 @@
 
 import Image from "next/image";
 import { Clock, Users, ChefHat } from "lucide-react";
-import type { Recipe } from "../page";
-
-const ingredients = [
-  "2 ripe avocados, diced",
-  "200g cooked shrimp, peeled",
-  "2 cups mixed greens",
-  "1 cup cherry tomatoes, halved",
-  "1/4 red onion, thinly sliced",
-  "2 tbsp olive oil",
-  "1 tbsp lime juice",
-  "Salt and pepper to taste",
-];
-const instructions = [
-  "Prepare all ingredients by washing and cutting them as specified.",
-  "In a large bowl, combine the mixed greens, cherry tomatoes, and red onion.",
-  "Add the diced avocado and cooked shrimp to the bowl.",
-  "In a small bowl, whisk together olive oil, lime juice, salt, and pepper.",
-  "Pour the dressing over the salad and gently toss to combine.",
-  "Serve immediately and enjoy your healthy meal!",
-];
-const tags = [
-  "Healthy",
-  "Low Carb",
-  "High Protein",
-  "Gluten Free",
-  "Quick & Easy",
-];
+import type { Recipe } from "../type";
 
 interface RecipeDetailModalProps {
   recipe: Recipe | null;
@@ -64,43 +38,41 @@ export function RecipeDetailModal({ recipe, onClose }: RecipeDetailModalProps) {
               />
             </figure>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="flex items-center gap-2 text-base-content/70">
-                <Clock className="w-5 h-5" />
+                <ChefHat className="w-5 h-5" />
                 <div>
-                  <p className="text-sm">Cook Time</p>
+                  <p className="text-sm">Type</p>
                   <p className="font-semibold text-base-content">
-                    {recipe.cookTime}
+                    {recipe.madeFromIngredients
+                      ? "From Ingredients"
+                      : "Single Meal"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-base-content/70">
                 <Users className="w-5 h-5" />
                 <div>
-                  <p className="text-sm">Servings</p>
-                  <p className="font-semibold text-base-content">2 people</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-base-content/70">
-                <ChefHat className="w-5 h-5" />
-                <div>
-                  <p className="text-sm">Difficulty</p>
-                  <p className="font-semibold text-base-content">
-                    {recipe.difficulty}
+                  <p className="text-sm">Status</p>
+                  <p className="font-semibold text-base-content capitalize">
+                    {recipe.status}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-base-content/70">
-                <p className="text-sm">Author</p>
-                <p className="font-semibold text-base-content">
-                  {recipe.author}
-                </p>
+                <Clock className="w-5 h-5" />
+                <div>
+                  <p className="text-sm">Submitted</p>
+                  <p className="font-semibold text-base-content">
+                    {recipe.submittedDate}
+                  </p>
+                </div>
               </div>
             </div>
 
             <div className="bg-warning/10 rounded-lg p-4 mb-6">
               <h3 className="font-bold text-base-content mb-3">
-                Nutrition Facts (per serving)
+                Nutrition Facts (per 100g)
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
@@ -131,49 +103,92 @@ export function RecipeDetailModal({ recipe, onClose }: RecipeDetailModalProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
+            {recipe.madeFromIngredients && recipe.ingredients.length > 0 && (
+              <div className="mb-6">
                 <h3 className="font-bold text-base-content mb-3">
                   Ingredients
                 </h3>
-                <ul className="space-y-2">
-                  {ingredients.map((ingredient, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-primary mt-1.5">•</span>
-                      <span className="text-base-content/90">{ingredient}</span>
-                    </li>
+                <div className="space-y-3">
+                  {recipe.ingredients.map((ingredientMeal) => (
+                    <div
+                      key={ingredientMeal.id}
+                      className="flex items-start gap-3 p-3 bg-base-200 rounded-lg"
+                    >
+                      <div className="avatar">
+                        <div className="w-12 h-12 rounded">
+                          <Image
+                            src={
+                              ingredientMeal.ingredient.image_url ||
+                              "https://placehold.co/100x100/E8F5F1/2D8B6E?text=Ing"
+                            }
+                            alt={ingredientMeal.ingredient.name}
+                            width={48}
+                            height={48}
+                            className="object-cover"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold">
+                          {ingredientMeal.ingredient.name}
+                        </p>
+                        <p className="text-sm text-base-content/70">
+                          Quantity: {parseFloat(ingredientMeal.quantity_kg)} kg
+                        </p>
+                        <div className="flex gap-4 mt-1 text-xs text-base-content/60">
+                          <span>
+                            {ingredientMeal.ingredient.kcal_per_100gr} kcal
+                          </span>
+                          <span>
+                            P: {ingredientMeal.ingredient.protein_per_100gr}g
+                          </span>
+                          <span>
+                            C: {ingredientMeal.ingredient.carbs_per_100gr}g
+                          </span>
+                          <span>
+                            F: {ingredientMeal.ingredient.fat_per_100gr}g
+                          </span>
+                        </div>
+                        {ingredientMeal.ingredient.tags.length > 0 && (
+                          <div className="flex gap-1 mt-2">
+                            {ingredientMeal.ingredient.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="badge badge-xs badge-outline"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-base-content mb-3">
-                  Instructions
-                </h3>
-                <ol className="space-y-3">
-                  {instructions.map((instruction, index) => (
-                    <li key={index} className="flex gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-content rounded-full flex items-center justify-center text-sm">
-                        {index + 1}
-                      </span>
-                      <span className="text-base-content/90 flex-1">
-                        {instruction}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
+            )}
 
-            <div>
-              <h4 className="font-bold text-base-content mb-2">Tags</h4>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <div key={index} className="badge badge-outline">
-                    {tag}
-                  </div>
-                ))}
+            {recipe.notes && (
+              <div className="mb-6">
+                <h3 className="font-bold text-base-content mb-3">Notes</h3>
+                <p className="text-base-content/80 bg-base-200 p-3 rounded-lg">
+                  {recipe.notes}
+                </p>
               </div>
-            </div>
+            )}
+
+            {recipe.tags.length > 0 && (
+              <div>
+                <h4 className="font-bold text-base-content mb-2">Tags</h4>
+                <div className="flex flex-wrap gap-2">
+                  {recipe.tags.map((tag, index) => (
+                    <div key={index} className="badge badge-outline">
+                      {tag}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

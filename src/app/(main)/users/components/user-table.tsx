@@ -89,16 +89,6 @@ export function UserTable({
                           </a>
                         </li>
                         <li>
-                          <a>
-                            <UserCheck className="h-4 w-4" /> Activate
-                          </a>
-                        </li>
-                        <li>
-                          <a className="text-error">
-                            <UserX className="h-4 w-4" /> Suspend
-                          </a>
-                        </li>
-                        <li>
                           <a
                             className="text-error"
                             onClick={() => onDeleteUser(user)}
