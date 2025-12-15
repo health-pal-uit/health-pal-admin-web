@@ -1,42 +1,17 @@
-import type { NextPage } from "next";
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Users,
   UtensilsCrossed,
   MessageSquare,
   TrendingUp,
-  AlertCircle,
 } from "lucide-react";
-
-const stats = [
-  {
-    label: "Total Users",
-    value: "12,345",
-    change: "+12%",
-    icon: Users,
-    color: "bg-success text-success-content",
-  },
-  {
-    label: "Pending Recipes",
-    value: "23",
-    change: "+5",
-    icon: UtensilsCrossed,
-    color: "bg-warning text-warning-content",
-  },
-  {
-    label: "Pending Posts",
-    value: "8",
-    change: "-2",
-    icon: MessageSquare,
-    color: "bg-info text-info-content",
-  },
-  {
-    label: "Active Users",
-    value: "8,234",
-    change: "+18%",
-    icon: TrendingUp,
-    color: "bg-primary text-primary-content",
-  },
-];
+import { toast } from "react-hot-toast";
+import { DashboardHeader } from "./components/dashboard-header";
+import { StatsCard } from "./components/stats-card";
+import { RecentActivities } from "./components/recent-activities";
+import { PendingApprovals } from "./components/pending-approvals";
 
 const recentActivities = [
   {
@@ -95,105 +70,77 @@ const pendingItems = [
   },
 ];
 
-const DashboardPage: NextPage = () => {
+export default function DashboardPage() {
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [activeUsers, setActiveUsers] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsersData();
+  }, []);
+
+  const fetchUsersData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/users?page=1&limit=1");
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+
+      if (data.data) {
+        const total = data.data.total || 0;
+        setTotalUsers(total);
+        const estimatedActive = Math.floor(total * 0.7);
+        setActiveUsers(estimatedActive);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Failed to load user statistics");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const stats = [
+    {
+      label: "Total Users",
+      value: isLoading ? "..." : totalUsers.toLocaleString(),
+      change: "+12%",
+      icon: Users,
+      color: "bg-success text-success-content",
+    },
+    {
+      label: "Pending Recipes",
+      value: "23",
+      change: "+5",
+      icon: UtensilsCrossed,
+      color: "bg-warning text-warning-content",
+    },
+    {
+      label: "Pending Posts",
+      value: "8",
+      change: "-2",
+      icon: MessageSquare,
+      color: "bg-info text-info-content",
+    },
+    {
+      label: "Active Users",
+      value: isLoading ? "..." : activeUsers.toLocaleString(),
+      change: "+18%",
+      icon: TrendingUp,
+      color: "bg-primary text-primary-content",
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-3xl font-bold text-base-content">
-          System Overview
-        </h1>
-        <p className="text-base-content/70">
-          Welcome back! Here&#39;s an overview of your system activity.
-        </p>
-      </div>
-
-      <div className="stats stats-vertical lg:stats-horizontal shadow-xl bg-base-100">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.label} className="stat">
-              <div className={`stat-figure ${stat.color} rounded-lg p-3`}>
-                <Icon className="h-6 w-6" />
-              </div>
-              <div className="stat-title">{stat.label}</div>
-              <div className="stat-value">{stat.value}</div>
-              <div className="stat-desc text-success">{stat.change}</div>
-            </div>
-          );
-        })}
-      </div>
-
+      <DashboardHeader />
+      <StatsCard stats={stats} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Recent Activities</h2>
-            <div className="mt-4 space-y-4">
-              {recentActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 pb-4 border-b border-base-200 last:border-0 last:pb-0"
-                >
-                  <div
-                    className={`mt-1 p-2 rounded-full ${
-                      activity.type === "warning"
-                        ? "bg-error/10"
-                        : "bg-success/10"
-                    }`}
-                  >
-                    {activity.type === "warning" ? (
-                      <AlertCircle className="h-4 w-4 text-error" />
-                    ) : (
-                      <div className="h-4 w-4 rounded-full bg-success" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-base-content">{activity.message}</p>
-                    <p className="text-sm text-base-content/60">
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Pending Approvals</h2>
-
-            <div className="overflow-x-auto mt-4">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Type</th>
-                    <th>Calories</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingItems.map((item) => (
-                    <tr key={item.id} className="hover">
-                      <td>
-                        <div className="font-bold">{item.title}</div>
-                        <div className="text-sm text-base-content/60">
-                          by {item.user}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="badge badge-outline">{item.type}</div>
-                      </td>
-                      <td>{item.calories}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <RecentActivities activities={recentActivities} />
+        <PendingApprovals items={pendingItems} />
       </div>
     </div>
   );
-};
-
-export default DashboardPage;
+}
