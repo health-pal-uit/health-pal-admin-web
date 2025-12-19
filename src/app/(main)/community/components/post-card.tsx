@@ -65,8 +65,8 @@ export function PostCard({ post, onReview, onViewDetails }: PostCardProps) {
           <div className="avatar">
             <div className="w-12 h-12 rounded-full">
               <Image
-                src={post.user.avatar_url || "/image/default-avatar.png"}
-                alt={post.user.fullname}
+                src={post.user?.avatar_url || "/image/default-avatar.png"}
+                alt={post.user?.fullname || "User"}
                 width={48}
                 height={48}
                 className="rounded-full"
@@ -78,11 +78,12 @@ export function PostCard({ post, onReview, onViewDetails }: PostCardProps) {
             <div className="flex items-start justify-between">
               <div>
                 <h4 className="font-bold text-base-content flex items-center gap-2">
-                  {post.user.fullname}
+                  {post.user?.fullname || "Unknown User"}
                   {getAttachTypeBadge()}
                 </h4>
                 <p className="text-sm text-base-content/60">
-                  @{post.user.username} • {formatDate(post.created_at)}
+                  @{post.user?.username || "unknown"} •{" "}
+                  {formatDate(post.created_at)}
                 </p>
               </div>
 

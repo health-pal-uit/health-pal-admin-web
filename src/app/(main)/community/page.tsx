@@ -60,8 +60,8 @@ export default function CommunityPage() {
     const query = searchQuery.toLowerCase();
     return (
       post.content.toLowerCase().includes(query) ||
-      post.user.fullname.toLowerCase().includes(query) ||
-      post.user.username.toLowerCase().includes(query)
+      post.user?.fullname?.toLowerCase().includes(query) ||
+      post.user?.username?.toLowerCase().includes(query)
     );
   });
 
