@@ -40,7 +40,7 @@ export const RecipeList = ({
           key={recipe.id}
           className="card md:flex-row bg-base-100 shadow-xl rounded-2xl overflow-hidden"
         >
-          <figure className="w-full md:w-56 h-48 md:h-auto flex-shrink-0">
+          <figure className="w-full md:w-56 h-48 md:h-full flex-shrink-0">
             <Image
               src={
                 recipe.imageUrl ||
@@ -123,28 +123,30 @@ export const RecipeList = ({
               </div>
             </div>
 
-            {recipe.status === "pending" && (
-              <div className="card-actions justify-start gap-2">
-                <button
-                  className="btn btn-sm btn-outline btn-ghost rounded-full"
-                  onClick={() => onViewDetails(recipe)}
-                >
-                  <Eye className="h-4 w-4" /> View Details
-                </button>
-                <button
-                  className="btn btn-sm btn-outline btn-success rounded-full"
-                  onClick={() => onApprove(recipe)}
-                >
-                  <CheckCircle className="h-4 w-4" /> Approve
-                </button>
-                <button
-                  className="btn btn-sm btn-outline btn-error rounded-full"
-                  onClick={() => onReject(recipe)}
-                >
-                  <XCircle className="h-4 w-4" /> Reject
-                </button>
-              </div>
-            )}
+            <div className="card-actions justify-start gap-2">
+              <button
+                className="btn btn-sm btn-outline btn-ghost rounded-full"
+                onClick={() => onViewDetails(recipe)}
+              >
+                <Eye className="h-4 w-4" /> View Details
+              </button>
+              {recipe.status === "pending" && (
+                <>
+                  <button
+                    className="btn btn-sm btn-outline btn-success rounded-full"
+                    onClick={() => onApprove(recipe)}
+                  >
+                    <CheckCircle className="h-4 w-4" /> Approve
+                  </button>
+                  <button
+                    className="btn btn-sm btn-outline btn-error rounded-full"
+                    onClick={() => onReject(recipe)}
+                  >
+                    <XCircle className="h-4 w-4" /> Reject
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       ))}
