@@ -1,10 +1,10 @@
 import { ApiMeal, Recipe, RecipeStatus } from "../type";
 
 export function processApiMeal(meal: ApiMeal): Recipe {
-  const status: RecipeStatus = meal.is_verified
-    ? "approved"
-    : meal.deleted_at
-      ? "rejected"
+  const status: RecipeStatus = meal.deleted_at
+    ? "rejected"
+    : meal.is_verified
+      ? "approved"
       : "pending";
 
   const submittedDate = new Date(meal.created_at).toLocaleDateString("vi-VN");

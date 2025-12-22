@@ -121,6 +121,27 @@ export default function RecipesPage() {
     }
   };
 
+  const handleRejectRecipe = async (recipe: Recipe) => {
+    try {
+      const response = await fetch(`/api/meals/${recipe.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reject recipe");
+      }
+
+      toast.success("Recipe rejected successfully");
+      fetchRecipes();
+    } catch (error) {
+      console.error("Error rejecting recipe:", error);
+      toast.error("Failed to reject recipe");
+    }
+  };
+
   const handleReviewSubmit = async () => {
     if (!selectedRecipe || !reviewAction) return;
 
@@ -196,7 +217,7 @@ export default function RecipesPage() {
         isLoading={isLoading}
         onViewDetails={handleOpenDetailModal}
         onApprove={handleApproveRecipe}
-        onReject={(recipe) => handleOpenReviewModal(recipe, "reject")}
+        onReject={handleRejectRecipe}
       />
 
       {!isLoading && filteredRecipes.length > 0 && (
