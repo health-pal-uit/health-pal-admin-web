@@ -17,7 +17,8 @@ export function ReviewModal({ post, action, onClose }: ReviewModalProps) {
           {action === "approve" ? "Approve Post" : "Reject/Delete Post"}
         </h3>
         <p className="py-2 text-base-content/80">
-          Post from {post.user.fullname} (@{post.user.username})
+          Post from {post.user?.fullname || "Unknown User"} (@
+          {post.user?.username || "N/A"})
         </p>
 
         <div className="space-y-4 py-4">

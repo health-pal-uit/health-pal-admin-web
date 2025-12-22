@@ -54,6 +54,8 @@ export default function CommunityPage() {
   };
 
   const filteredPosts = posts.filter((post) => {
+    if (!post.user) return false;
+
     const status = getPostStatus(post);
     if (status !== activeTab) return false;
 

@@ -23,5 +23,5 @@ export interface Post {
   is_approved: boolean;
   created_at: string;
   deleted_at: string | null;
-  user: User;
+  user: User | null;
 }
