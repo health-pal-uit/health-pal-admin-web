@@ -97,6 +97,30 @@ export default function RecipesPage() {
     }, 300);
   };
 
+  const handleApproveRecipe = async (recipe: Recipe) => {
+    try {
+      const response = await fetch(`/api/meals/${recipe.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          is_verified: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to approve recipe");
+      }
+
+      toast.success("Recipe approved successfully");
+      fetchRecipes();
+    } catch (error) {
+      console.error("Error approving recipe:", error);
+      toast.error("Failed to approve recipe");
+    }
+  };
+
   const handleReviewSubmit = async () => {
     if (!selectedRecipe || !reviewAction) return;
 
@@ -171,7 +195,7 @@ export default function RecipesPage() {
         recipes={filteredRecipes}
         isLoading={isLoading}
         onViewDetails={handleOpenDetailModal}
-        onApprove={(recipe) => handleOpenReviewModal(recipe, "approve")}
+        onApprove={handleApproveRecipe}
         onReject={(recipe) => handleOpenReviewModal(recipe, "reject")}
       />
 
