@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Upload, Image as ImageIcon } from "lucide-react";
 
 interface AddMealModalProps {
   onClose: () => void;
@@ -10,6 +10,8 @@ interface AddMealModalProps {
 
 export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     serving_gr: "",
@@ -81,6 +83,25 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   return (
@@ -236,9 +257,58 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
               />
             </div>
 
+            {/* Image Upload Section */}
             <div className="form-control md:col-span-2">
               <label className="label">
-                <span className="label-text">Image URL</span>
+                <span className="label-text">Meal Image</span>
+              </label>
+
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative mb-4 w-full h-48 border-2 border-dashed border-base-300 rounded-lg overflow-hidden">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 btn btn-circle btn-sm btn-error"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              {!imagePreview && (
+                <label className="cursor-pointer">
+                  <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-base-300 rounded-lg hover:border-primary transition-colors">
+                    <div className="text-center">
+                      <Upload className="mx-auto h-12 w-12 text-base-content/50" />
+                      <span className="mt-2 block text-sm text-base-content/70">
+                        Click to upload image
+                      </span>
+                      <span className="mt-1 block text-xs text-base-content/50">
+                        PNG, JPG, GIF up to 10MB
+                      </span>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Optional Image URL */}
+            <div className="form-control md:col-span-2">
+              <label className="label">
+                <span className="label-text">Or enter Image URL</span>
               </label>
               <input
                 type="url"
