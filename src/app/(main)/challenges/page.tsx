@@ -63,13 +63,16 @@ export default function ChallengesPage() {
     image?: File;
   }) => {
     try {
-      const body: Record<string, string> = {
-        name: data.name,
-        difficulty: data.difficulty,
-      };
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("difficulty", data.difficulty);
 
       if (data.note) {
-        body.note = data.note;
+        formData.append("note", data.note);
+      }
+
+      if (data.image) {
+        formData.append("image", data.image);
       }
 
       const isEdit = !!editingChallenge;
@@ -80,10 +83,7 @@ export default function ChallengesPage() {
 
       const res = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+        body: formData,
       });
 
       if (res.status === 401) {

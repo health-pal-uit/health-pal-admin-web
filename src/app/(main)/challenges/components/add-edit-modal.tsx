@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Challenge, Difficulty } from "../type";
+import { Upload, X } from "lucide-react";
+import Image from "next/image";
 
 interface AddEditModalProps {
   challenge: Challenge | null;
@@ -19,42 +21,64 @@ export function AddEditChallengeModal({
   onClose,
   onSave,
 }: AddEditModalProps) {
-  const [name, setName] = useState(challenge?.name || "");
-  const [note, setNote] = useState(challenge?.note || "");
-  const [difficulty, setDifficulty] = useState<Difficulty>(
-    challenge?.difficulty || "easy",
-  );
-  const [image, setImage] = useState<File | null>(null);
+  const [name, setName] = useState("");
+  const [note, setNote] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const formKey = challenge ? `edit-${challenge.id}` : "add-new";
-
-  // Reset form when challenge changes
   useEffect(() => {
-    setName(challenge?.name || "");
-    setNote(challenge?.note || "");
-    setDifficulty(challenge?.difficulty || "easy");
-    setImage(null);
-    setHasChanges(false);
+    if (challenge) {
+      setName(challenge.name || "");
+      setNote(challenge.note || "");
+      setDifficulty(challenge.difficulty || "easy");
+      setImageFile(null);
+      const imgUrl =
+        typeof challenge.image_url === "string"
+          ? challenge.image_url
+          : challenge.image_url?.url || null;
+      setImagePreview(imgUrl);
+    } else {
+      setName("");
+      setNote("");
+      setDifficulty("easy");
+      setImageFile(null);
+      setImagePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }, [challenge]);
 
-  // Track changes
-  useEffect(() => {
-    if (!challenge) {
-      setHasChanges(name.trim().length > 0);
-      return;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size should be less than 5MB");
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
-    const nameChanged = name.trim() !== challenge.name;
-    const noteChanged = (note.trim() || "") !== (challenge.note || "");
-    const difficultyChanged = difficulty !== challenge.difficulty;
-    const imageChanged = image !== null;
-
-    setHasChanges(
-      nameChanged || noteChanged || difficultyChanged || imageChanged,
-    );
-  }, [name, note, difficulty, image, challenge]);
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +93,7 @@ export function AddEditChallengeModal({
         name: name.trim(),
         note: note.trim() || "",
         difficulty,
-        ...(image && { image }),
+        ...(imageFile && { image: imageFile }),
       });
       onClose();
     } finally {
@@ -85,7 +109,7 @@ export function AddEditChallengeModal({
         </h3>
         <p className="mt-1 text-base-content/70">Fill in challenge details</p>
 
-        <form key={formKey} onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
           <div className="space-y-1">
             <label className="text-sm font-medium">Challenge Name *</label>
             <input
@@ -123,12 +147,45 @@ export function AddEditChallengeModal({
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium">Challenge Image</label>
+            <label className="text-sm font-medium">
+              Challenge Image <span className="text-error">*</span>
+            </label>
+            {imagePreview ? (
+              <div className="relative w-full h-48 border-2 border-base-300 rounded-xl overflow-hidden">
+                <Image
+                  src={imagePreview}
+                  alt="Challenge preview"
+                  fill
+                  className="object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 btn btn-sm btn-circle btn-error"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div
+                className="p-6 border-2 border-dashed border-base-300 rounded-xl flex flex-col items-center text-center gap-2 cursor-pointer hover:border-primary transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-6 h-6 opacity-50" />
+                <span className="text-base-content/60 text-sm">
+                  Click to upload image
+                </span>
+                <span className="text-base-content/40 text-xs">
+                  PNG, JPG up to 5MB
+                </span>
+              </div>
+            )}
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-              className="file-input file-input-bordered w-full rounded-lg bg-base-200/50"
+              onChange={handleImageChange}
+              className="hidden"
             />
           </div>
 
@@ -144,12 +201,15 @@ export function AddEditChallengeModal({
             <button
               type="submit"
               className="btn btn-sm btn-primary rounded-lg"
-              disabled={isSubmitting || !name.trim() || !hasChanges}
+              disabled={isSubmitting || !name.trim()}
             >
               {isSubmitting ? (
-                <span className="loading loading-spinner loading-xs"></span>
+                <>
+                  <span className="loading loading-spinner loading-xs"></span>
+                  Saving...
+                </>
               ) : challenge ? (
-                "Update"
+                "Update Challenge"
               ) : (
                 "Create Challenge"
               )}

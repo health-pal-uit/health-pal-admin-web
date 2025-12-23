@@ -88,13 +88,7 @@ export function ChallengeCard({ challenge, onEdit }: ChallengeCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-base-200">
-          <div className="flex items-center gap-2 text-base-content/60">
-            <Activity className="h-4 w-4" />
-            <span className="text-sm">
-              {activityCount} {activityCount === 1 ? "activity" : "activities"}
-            </span>
-          </div>
+        <div className="flex items-center justify-between w-full mt-4 pt-4 border-t border-base-200">
           <p className="text-base-content/60 text-xs">
             Created {formatDate(challenge.created_at)}
           </p>
