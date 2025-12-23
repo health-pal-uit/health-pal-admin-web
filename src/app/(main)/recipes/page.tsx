@@ -12,6 +12,7 @@ import { PaginationControls } from "./components/pagination-controls";
 import { RecipeDetailModal } from "./components/recipe-detail";
 import { ReviewModal } from "./components/review-modal";
 import { AddMealModal } from "./components/add-meal-modal";
+import { RejectModal } from "./components/reject-modal";
 import { Plus } from "lucide-react";
 
 export default function RecipesPage() {
@@ -27,6 +28,7 @@ export default function RecipesPage() {
   const [totalRecipes, setTotalRecipes] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [recipeToReject, setRecipeToReject] = useState<Recipe | null>(null);
   const limit = 10;
 
   useEffect(() => {
@@ -133,13 +135,21 @@ export default function RecipesPage() {
     }
   };
 
-  const handleRejectRecipe = async (recipe: Recipe) => {
+  const handleRejectRecipe = (recipe: Recipe) => {
+    setRecipeToReject(recipe);
+    (document.getElementById("reject_modal") as HTMLDialogElement)?.showModal();
+  };
+
+  const handleRejectSubmit = async (reason: string) => {
+    if (!recipeToReject) return;
+
     try {
-      const response = await fetch(`/api/meals/${recipe.id}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/meals/${recipeToReject.id}/reject`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ reason }),
       });
 
       if (!response.ok) {
@@ -147,12 +157,20 @@ export default function RecipesPage() {
       }
 
       toast.success("Recipe rejected successfully");
+      handleCloseRejectModal();
       setCurrentPage(1);
       fetchRecipes();
     } catch (error) {
       console.error("Error rejecting recipe:", error);
       toast.error("Failed to reject recipe");
     }
+  };
+
+  const handleCloseRejectModal = () => {
+    (document.getElementById("reject_modal") as HTMLDialogElement)?.close();
+    setTimeout(() => {
+      setRecipeToReject(null);
+    }, 300);
   };
 
   const handleReviewSubmit = async () => {
@@ -250,6 +268,12 @@ export default function RecipesPage() {
         action={reviewAction}
         onClose={handleCloseModal}
         onSubmit={handleReviewSubmit}
+      />
+
+      <RejectModal
+        recipe={recipeToReject}
+        onClose={handleCloseRejectModal}
+        onSubmit={handleRejectSubmit}
       />
 
       <AddMealModal
