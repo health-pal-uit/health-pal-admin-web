@@ -40,6 +40,22 @@ export default function IngredientsPage() {
   const [totalPendingIngredients, setTotalPendingIngredients] = useState(0);
   const [limit] = useState(10);
 
+  // Fetch pending count on initial load
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const res = await fetch(`/api/ingredients/pending?page=1&limit=1`);
+        if (res.ok) {
+          const data = await res.json();
+          setTotalPendingIngredients(data.data.total || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching pending count:", error);
+      }
+    };
+    fetchPendingCount();
+  }, []);
+
   useEffect(() => {
     if (activeTab !== "approved") return;
 
@@ -87,7 +103,7 @@ export default function IngredientsPage() {
       try {
         setIsLoading(true);
         const res = await fetch(
-          `/api/ingredients/admin?page=${pendingPage}&limit=${limit}`,
+          `/api/ingredients/pending?page=${pendingPage}&limit=${limit}`,
         );
 
         if (res.status === 401) {
@@ -106,10 +122,14 @@ export default function IngredientsPage() {
         const ingredientsList = Array.isArray(data.data.data)
           ? data.data.data
           : [];
-        const unverifiedList = ingredientsList.filter(
-          (ing: ApprovedIngredient) => !ing.is_verified,
-        );
-        setPendingIngredients(unverifiedList);
+
+        // Map _image_url to image_url for consistency
+        const mappedList = ingredientsList.map((ing: ApprovedIngredient) => ({
+          ...ing,
+          image_url: ing._image_url || ing.image_url,
+        }));
+
+        setPendingIngredients(mappedList);
         setTotalPendingIngredients(data.data.total || 0);
         setPendingTotalPages(Math.ceil((data.data.total || 0) / limit));
       } catch (error) {

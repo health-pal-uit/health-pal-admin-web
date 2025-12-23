@@ -2,6 +2,9 @@ export type IngredientStatus = "approved" | "pending";
 
 export interface ApprovedIngredient {
   id: string | number;
+  user_id?: string;
+  reviewer_id?: string | null;
+  ingredient_id?: string | null;
   name: string;
   kcal_per_100gr: number;
   protein_per_100gr: number;
@@ -10,10 +13,16 @@ export interface ApprovedIngredient {
   fiber_per_100gr: number;
   notes?: string | null;
   tags: string[];
-  is_verified: boolean;
+  is_verified?: boolean;
+  status?: string;
   image_url?: string | { url: string } | null;
+  _image_url?: string;
   created_at: string;
   deleted_at?: string | null;
+  opt?: string;
+  reviewed_at?: string | null;
+  rejection_reason?: string | null;
+  updated_at?: string;
 }
 
 export type Ingredient = {
