@@ -67,13 +67,9 @@ export default function RecipesPage() {
         setRecipes(filteredByTab);
         setTotalRecipes(result.data.total || 0);
 
+        // Only update pending count when in pending tab
         if (activeTab === "pending") {
           setPendingCount(result.data.total || 0);
-        } else {
-          const pending = processedRecipes.filter(
-            (r: Recipe) => r.status === "pending",
-          ).length;
-          setPendingCount(pending);
         }
       }
     } catch (error) {
