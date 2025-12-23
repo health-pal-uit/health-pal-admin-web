@@ -111,14 +111,11 @@ export default function RecipesPage() {
 
   const handleApproveRecipe = async (recipe: Recipe) => {
     try {
-      const response = await fetch(`/api/meals/${recipe.id}`, {
+      const response = await fetch(`/api/meals/${recipe.id}/approve`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          is_verified: true,
-        }),
       });
 
       if (!response.ok) {
