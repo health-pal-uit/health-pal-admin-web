@@ -37,10 +37,14 @@ export default function RecipesPage() {
     try {
       setIsLoading(true);
 
-      const endpoint =
-        activeTab === "pending"
-          ? `/api/meals/pending?page=${currentPage}&limit=${limit}`
-          : `/api/meals?page=${currentPage}&limit=${limit}`;
+      let endpoint: string;
+      if (activeTab === "pending") {
+        endpoint = `/api/meals/pending?page=${currentPage}&limit=${limit}`;
+      } else if (activeTab === "rejected") {
+        endpoint = `/api/meals/rejected?page=${currentPage}&limit=${limit}`;
+      } else {
+        endpoint = `/api/meals?page=${currentPage}&limit=${limit}`;
+      }
 
       const response = await fetch(endpoint);
 
@@ -53,8 +57,10 @@ export default function RecipesPage() {
       if (result.data && Array.isArray(result.data.data)) {
         const processedRecipes = result.data.data.map(processApiMeal);
 
+        // For pending and rejected endpoints, all recipes match the tab
+        // For admin endpoint, filter by activeTab
         const filteredByTab =
-          activeTab === "pending"
+          activeTab === "pending" || activeTab === "rejected"
             ? processedRecipes
             : processedRecipes.filter((r: Recipe) => r.status === activeTab);
 

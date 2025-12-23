@@ -20,6 +20,14 @@ export interface IngreMeal {
   ingredient: Ingredient;
 }
 
+export interface Author {
+  id: string;
+  username: string;
+  email: string;
+  fullname: string;
+  avatar_url: string | null;
+}
+
 export interface ApiMeal {
   id: string;
   name: string;
@@ -46,6 +54,7 @@ export interface ApiMeal {
   reviewed_at?: string | null;
   rejection_reason?: string | null;
   updated_at?: string;
+  author?: Author;
 }
 
 // UI Types

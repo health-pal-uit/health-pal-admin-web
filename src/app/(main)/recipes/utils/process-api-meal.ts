@@ -8,9 +8,13 @@ export function processApiMeal(meal: ApiMeal): Recipe {
     status =
       meal.status === "PENDING"
         ? "pending"
-        : meal.deleted_at
+        : meal.status === "REJECTED"
           ? "rejected"
-          : "approved";
+          : meal.status === "APPROVED"
+            ? "approved"
+            : meal.deleted_at
+              ? "rejected"
+              : "approved";
   } else {
     // Old API format
     status = meal.deleted_at
@@ -25,6 +29,7 @@ export function processApiMeal(meal: ApiMeal): Recipe {
   return {
     id: meal.id,
     title: meal.name,
+    author: meal.author?.fullname,
     calories: Math.round(meal.kcal_per_100gr),
     protein: Math.round(meal.protein_per_100gr * 10) / 10,
     carbs: Math.round(meal.carbs_per_100gr * 10) / 10,
