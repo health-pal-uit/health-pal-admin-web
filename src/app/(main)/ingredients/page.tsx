@@ -204,6 +204,76 @@ export default function IngredientsPage() {
     fetchIngredients();
   };
 
+  const handleReviewSubmit = async (notes?: string) => {
+    if (!reviewingIngredient || !reviewAction) return;
+
+    try {
+      if (reviewAction === "approve") {
+        const response = await fetch(
+          `/api/ingredients/${reviewingIngredient.id}/approve`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to approve ingredient");
+        }
+
+        toast.success("Ingredient approved successfully");
+      } else {
+        // Reject logic here - to be implemented
+        const response = await fetch(
+          `/api/ingredients/${reviewingIngredient.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              is_verified: false,
+              deleted_at: new Date().toISOString(),
+              notes: notes,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to reject ingredient");
+        }
+
+        toast.success("Ingredient rejected successfully");
+      }
+
+      handleCloseModal();
+
+      // Refetch pending ingredients
+      if (activeTab === "pending") {
+        const res = await fetch(
+          `/api/ingredients/pending?page=${pendingPage}&limit=${limit}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const ingredientsList = Array.isArray(data.data.data)
+            ? data.data.data
+            : [];
+          const mappedList = ingredientsList.map((ing: ApprovedIngredient) => ({
+            ...ing,
+            image_url: ing._image_url || ing.image_url,
+          }));
+          setPendingIngredients(mappedList);
+          setTotalPendingIngredients(data.data.total || 0);
+        }
+      }
+    } catch (error) {
+      console.error("Error reviewing ingredient:", error);
+      toast.error("Failed to review ingredient");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Header
@@ -362,6 +432,7 @@ export default function IngredientsPage() {
         ingredient={reviewingIngredient}
         action={reviewAction}
         onClose={handleCloseModal}
+        onSubmit={handleReviewSubmit}
       />
     </div>
   );

@@ -1,20 +1,34 @@
 import { ApprovedIngredient } from "../type";
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 interface ReviewModalProps {
   ingredient: ApprovedIngredient | null;
   action: "approve" | "reject" | null;
   onClose: () => void;
-  // Thêm onSubmit: (notes) => void;
+  onSubmit: (notes?: string) => void;
 }
 
 export function ReviewIngredientModal({
   ingredient,
   action,
   onClose,
+  onSubmit,
 }: ReviewModalProps) {
+  const [notes, setNotes] = useState("");
+
   if (!ingredient) return null;
+
+  const handleSubmit = () => {
+    onSubmit(notes);
+    setNotes("");
+  };
+
+  const handleClose = () => {
+    setNotes("");
+    onClose();
+  };
 
   const getImageUrl = (img: ApprovedIngredient["image_url"]): string | null => {
     if (!img) return null;
@@ -108,33 +122,36 @@ export function ReviewIngredientModal({
               <p className="text-base-content">{ingredient.notes}</p>
             </div>
           )}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">
-                Notes {action === "reject" && "(required)"}
-              </span>
-            </label>
-            <textarea
-              className="textarea textarea-bordered h-24"
-              placeholder="Enter notes..."
-            ></textarea>
-          </div>
+          {action === "reject" && (
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Notes (required)</span>
+              </label>
+              <textarea
+                className="textarea textarea-bordered h-24"
+                placeholder="Enter rejection reason..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              ></textarea>
+            </div>
+          )}
         </div>
 
         <div className="modal-action">
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={handleClose}>
             Cancel
           </button>
           <button
             className={`btn ${action === "approve" ? "btn-success" : "btn-error"}`}
-            onClick={onClose}
+            onClick={handleSubmit}
+            disabled={action === "reject" && !notes.trim()}
           >
             {action === "approve" ? "Approve" : "Reject"}
           </button>
         </div>
       </div>
       <form method="dialog" className="modal-backdrop">
-        <button onClick={onClose}>close</button>
+        <button onClick={handleClose}>close</button>
       </form>
     </dialog>
   );
