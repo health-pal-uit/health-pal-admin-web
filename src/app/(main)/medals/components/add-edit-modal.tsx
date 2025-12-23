@@ -1,7 +1,7 @@
 "use client";
 import { Medal } from "../type";
 import { Upload, X } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
 
@@ -16,19 +16,39 @@ export function AddEditMedalModal({
   onClose,
   onSuccess,
 }: AddEditModalProps) {
-  const [name, setName] = useState(medal?.name || "");
-  const [tier, setTier] = useState(medal?.tier || "bronze");
-  const [note, setNote] = useState(medal?.note || "");
+  const [name, setName] = useState("");
+  const [tier, setTier] = useState<Medal["tier"]>("bronze");
+  const [note, setNote] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    medal?.image_url
-      ? typeof medal.image_url === "string"
-        ? medal.image_url
-        : medal.image_url.url
-      : null,
-  );
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset form when medal changes
+  useEffect(() => {
+    if (medal) {
+      setName(medal.name || "");
+      setTier(medal.tier || "bronze");
+      setNote(medal.note || "");
+      setImageFile(null);
+      setImagePreview(
+        medal.image_url
+          ? typeof medal.image_url === "string"
+            ? medal.image_url
+            : medal.image_url.url
+          : null,
+      );
+    } else {
+      setName("");
+      setTier("bronze");
+      setNote("");
+      setImageFile(null);
+      setImagePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [medal]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,8 +102,11 @@ export function AddEditMedalModal({
         formData.append("image", imageFile);
       }
 
-      const response = await fetch("/api/medals", {
-        method: "POST",
+      const url = medal ? `/api/medals/${medal.id}` : "/api/medals";
+      const method = medal ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
         body: formData,
       });
 
