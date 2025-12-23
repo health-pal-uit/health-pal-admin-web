@@ -225,19 +225,14 @@ export default function IngredientsPage() {
 
         toast.success("Ingredient approved successfully");
       } else {
-        // Reject logic here - to be implemented
         const response = await fetch(
-          `/api/ingredients/${reviewingIngredient.id}`,
+          `/api/ingredients/${reviewingIngredient.id}/reject`,
           {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              is_verified: false,
-              deleted_at: new Date().toISOString(),
-              notes: notes,
-            }),
+            body: JSON.stringify({ reason: notes }),
           },
         );
 
