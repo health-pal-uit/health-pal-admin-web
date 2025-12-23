@@ -1,15 +1,20 @@
 "use client";
 
-import { MoreVertical, Pencil, Trash2, Target, Activity } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Target } from "lucide-react";
 import Image from "next/image";
 import { Challenge, difficultyColors, difficultyLabels } from "../type";
 
 interface ChallengeCardProps {
   challenge: Challenge;
   onEdit: (challenge: Challenge) => void;
+  onDelete: (challenge: Challenge) => void;
 }
 
-export function ChallengeCard({ challenge, onEdit }: ChallengeCardProps) {
+export function ChallengeCard({
+  challenge,
+  onEdit,
+  onDelete,
+}: ChallengeCardProps) {
   const getImageUrl = (img: Challenge["image_url"]): string | null => {
     if (!img) return null;
     if (typeof img === "string") return img;
@@ -19,7 +24,6 @@ export function ChallengeCard({ challenge, onEdit }: ChallengeCardProps) {
   };
 
   const imgUrl = getImageUrl(challenge.image_url);
-  const activityCount = challenge.activity_records?.length || 0;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -80,7 +84,7 @@ export function ChallengeCard({ challenge, onEdit }: ChallengeCardProps) {
                 </a>
               </li>
               <li>
-                <a className="text-error">
+                <a className="text-error" onClick={() => onDelete(challenge)}>
                   <Trash2 className="h-4 w-4" /> Delete
                 </a>
               </li>

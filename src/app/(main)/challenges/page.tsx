@@ -19,6 +19,9 @@ export default function ChallengesPage() {
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(
     null,
   );
+  const [deletingChallenge, setDeletingChallenge] = useState<Challenge | null>(
+    null,
+  );
 
   const fetchChallenges = async () => {
     try {
@@ -54,6 +57,7 @@ export default function ChallengesPage() {
 
   useEffect(() => {
     fetchChallenges();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, limit, router]);
 
   const handleSaveChallenge = async (data: {
@@ -119,6 +123,53 @@ export default function ChallengesPage() {
     )?.showModal();
   };
 
+  const handleDeleteChallenge = (challenge: Challenge) => {
+    setDeletingChallenge(challenge);
+    (
+      document.getElementById("delete_challenge_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingChallenge) return;
+
+    try {
+      const res = await fetch(`/api/challenges/${deletingChallenge.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.status === 401) {
+        toast.error("Session expired. Please login again.");
+        router.push("/login");
+        return;
+      }
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast.error(result.message || "Failed to delete challenge");
+        return;
+      }
+
+      toast.success("Challenge deleted successfully!");
+      (
+        document.getElementById("delete_challenge_modal") as HTMLDialogElement
+      )?.close();
+      setDeletingChallenge(null);
+      await fetchChallenges();
+    } catch (error) {
+      toast.error("An error occurred while deleting the challenge.");
+      console.error(error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    (
+      document.getElementById("delete_challenge_modal") as HTMLDialogElement
+    )?.close();
+    setDeletingChallenge(null);
+  };
+
   const handleCloseModal = () => {
     (
       document.getElementById("add_edit_challenge_modal") as HTMLDialogElement
@@ -156,6 +207,7 @@ export default function ChallengesPage() {
               key={challenge.id}
               challenge={challenge}
               onEdit={handleAddEdit}
+              onDelete={handleDeleteChallenge}
             />
           ))}
         </div>
@@ -203,6 +255,38 @@ export default function ChallengesPage() {
         onClose={handleCloseModal}
         onSave={handleSaveChallenge}
       />
+
+      <dialog id="delete_challenge_modal" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Xác nhận xóa</h3>
+          <p className="py-4">
+            Bạn có chắc chắn muốn xóa challenge{" "}
+            <span className="font-semibold">
+              &quot;{deletingChallenge?.name}&quot;
+            </span>
+            ?
+          </p>
+          <div className="modal-action">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={handleCancelDelete}
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              className="btn btn-error"
+              onClick={confirmDelete}
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={handleCancelDelete}>close</button>
+        </form>
+      </dialog>
     </div>
   );
 }
