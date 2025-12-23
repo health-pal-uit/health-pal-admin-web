@@ -31,14 +31,18 @@ export default function RecipesPage() {
 
   useEffect(() => {
     fetchRecipes();
-  }, [currentPage]);
+  }, [currentPage, activeTab]);
 
   const fetchRecipes = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `/api/meals?page=${currentPage}&limit=${limit}`,
-      );
+
+      const endpoint =
+        activeTab === "pending"
+          ? `/api/meals/pending?page=${currentPage}&limit=${limit}`
+          : `/api/meals?page=${currentPage}&limit=${limit}`;
+
+      const response = await fetch(endpoint);
 
       if (!response.ok) {
         throw new Error("Failed to fetch recipes");
@@ -48,13 +52,23 @@ export default function RecipesPage() {
 
       if (result.data && Array.isArray(result.data.data)) {
         const processedRecipes = result.data.data.map(processApiMeal);
-        setRecipes(processedRecipes);
+
+        const filteredByTab =
+          activeTab === "pending"
+            ? processedRecipes
+            : processedRecipes.filter((r: Recipe) => r.status === activeTab);
+
+        setRecipes(filteredByTab);
         setTotalRecipes(result.data.total || 0);
 
-        const pending = processedRecipes.filter(
-          (r: Recipe) => r.status === "pending",
-        ).length;
-        setPendingCount(pending);
+        if (activeTab === "pending") {
+          setPendingCount(result.data.total || 0);
+        } else {
+          const pending = processedRecipes.filter(
+            (r: Recipe) => r.status === "pending",
+          ).length;
+          setPendingCount(pending);
+        }
       }
     } catch (error) {
       console.error("Error fetching recipes:", error);
@@ -64,10 +78,8 @@ export default function RecipesPage() {
     }
   };
 
-  const filteredRecipes = recipes.filter(
-    (recipe) =>
-      recipe.status === activeTab &&
-      recipe.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredRecipes = recipes.filter((recipe) =>
+    recipe.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleOpenReviewModal = (
@@ -114,6 +126,7 @@ export default function RecipesPage() {
       }
 
       toast.success("Recipe approved successfully");
+      setCurrentPage(1);
       fetchRecipes();
     } catch (error) {
       console.error("Error approving recipe:", error);
@@ -135,6 +148,7 @@ export default function RecipesPage() {
       }
 
       toast.success("Recipe rejected successfully");
+      setCurrentPage(1);
       fetchRecipes();
     } catch (error) {
       console.error("Error rejecting recipe:", error);
@@ -166,6 +180,7 @@ export default function RecipesPage() {
         `Recipe ${reviewAction === "approve" ? "approved" : "rejected"} successfully`,
       );
       handleCloseModal();
+      setCurrentPage(1);
       fetchRecipes();
     } catch (error) {
       console.error("Error updating recipe:", error);

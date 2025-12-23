@@ -1,4 +1,3 @@
-// API Response Types
 export interface Ingredient {
   id: string;
   name: string;
@@ -29,15 +28,24 @@ export interface ApiMeal {
   fat_per_100gr: number;
   carbs_per_100gr: number;
   fiber_per_100gr: number | null;
-  rating: number | null;
+  rating?: number | null;
   tags: string[];
   notes: string | null;
   created_at: string;
-  is_verified: boolean;
+  is_verified?: boolean;
+  status?: string;
   image_url: string | null;
   deleted_at: string | null;
-  made_from_ingredients: boolean;
-  ingre_meals: IngreMeal[];
+  made_from_ingredients?: boolean;
+  ingre_meals?: IngreMeal[];
+  user_id?: string;
+  reviewer_id?: string | null;
+  meal_id?: string | null;
+  serving_gr?: number | null;
+  opt?: string;
+  reviewed_at?: string | null;
+  rejection_reason?: string | null;
+  updated_at?: string;
 }
 
 // UI Types

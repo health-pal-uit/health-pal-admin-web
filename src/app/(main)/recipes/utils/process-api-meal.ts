@@ -1,11 +1,24 @@
 import { ApiMeal, Recipe, RecipeStatus } from "../type";
 
 export function processApiMeal(meal: ApiMeal): Recipe {
-  const status: RecipeStatus = meal.deleted_at
-    ? "rejected"
-    : meal.is_verified
-      ? "approved"
-      : "pending";
+  // Handle status from either new API format (status: "PENDING") or old format (is_verified)
+  let status: RecipeStatus;
+  if (meal.status) {
+    // New API format
+    status =
+      meal.status === "PENDING"
+        ? "pending"
+        : meal.deleted_at
+          ? "rejected"
+          : "approved";
+  } else {
+    // Old API format
+    status = meal.deleted_at
+      ? "rejected"
+      : meal.is_verified
+        ? "approved"
+        : "pending";
+  }
 
   const submittedDate = new Date(meal.created_at).toLocaleDateString("vi-VN");
 
@@ -19,11 +32,11 @@ export function processApiMeal(meal: ApiMeal): Recipe {
     fiber: meal.fiber_per_100gr,
     status,
     submittedDate,
-    rating: meal.rating,
+    rating: meal.rating || null,
     imageUrl: meal.image_url,
     tags: meal.tags,
-    madeFromIngredients: meal.made_from_ingredients,
-    ingredients: meal.ingre_meals,
+    madeFromIngredients: meal.made_from_ingredients || false,
+    ingredients: meal.ingre_meals || [],
     notes: meal.notes,
   };
 }

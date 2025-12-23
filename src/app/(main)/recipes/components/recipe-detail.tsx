@@ -25,7 +25,7 @@ export function RecipeDetailModal({ recipe, onClose }: RecipeDetailModalProps) {
           </form>
 
           <div className="py-4 max-h-[70vh] overflow-y-auto">
-            <figure className="w-full h-64 bg-base-200 rounded-lg overflow-hidden mb-6">
+            <figure className="w-full h-64 bg-base-200 rounded-lg overflow-hidden mb-6 flex items-center justify-center">
               <Image
                 src={
                   recipe.imageUrl ||
@@ -34,7 +34,7 @@ export function RecipeDetailModal({ recipe, onClose }: RecipeDetailModalProps) {
                 alt={recipe.title || "Recipe"}
                 width={800}
                 height={400}
-                className="w-full h-full object-cover"
+                className="h-full w-auto object-contain"
               />
             </figure>
 
