@@ -12,18 +12,18 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await request.json();
 
   try {
+    const formData = await request.formData();
+
     const apiRes = await fetch(
       `${process.env.BACKEND_API_URL}/challenges/${id}`,
       {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(body),
+        body: formData,
       },
     );
 
