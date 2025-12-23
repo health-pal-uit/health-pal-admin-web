@@ -39,3 +39,40 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function POST(request: Request) {
+  const token = (await cookies()).get("auth_token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const formData = await request.formData();
+
+    const url = `${process.env.BACKEND_API_URL}/medals`;
+
+    const apiRes = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await apiRes.json();
+
+    if (!apiRes.ok) {
+      return NextResponse.json(
+        { message: data.message || "Failed to create medal" },
+        { status: data.statusCode || 500 },
+      );
+    }
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}

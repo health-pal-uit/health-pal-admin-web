@@ -70,6 +70,20 @@ export default function MedalsPage() {
     }, 300);
   };
 
+  const handleMedalSuccess = async () => {
+    try {
+      const res = await fetch(`/api/medals?page=${currentPage}&limit=${limit}`);
+      if (res.ok) {
+        const data = await res.json();
+        const medalsList = Array.isArray(data.data.data) ? data.data.data : [];
+        setMedals(medalsList);
+        setTotalMedals(data.data.total || 0);
+      }
+    } catch (error) {
+      console.error("Error refetching medals:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <Header
@@ -136,7 +150,11 @@ export default function MedalsPage() {
         </div>
       )}
 
-      <AddEditMedalModal medal={editingMedal} onClose={handleCloseModal} />
+      <AddEditMedalModal
+        medal={editingMedal}
+        onClose={handleCloseModal}
+        onSuccess={handleMedalSuccess}
+      />
     </div>
   );
 }
