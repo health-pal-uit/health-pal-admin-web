@@ -6,7 +6,7 @@ import {
   Trash2,
   Activity as ActivityIcon,
 } from "lucide-react";
-import { Activity } from "../type";
+import { Activity, ActivityTypeLabels } from "../type";
 
 interface ActivityTableProps {
   activities: Activity[];
@@ -68,9 +68,11 @@ export function ActivityTable({
                         {activity.categories.map((category, idx) => (
                           <div
                             key={idx}
-                            className="badge badge-outline badge-primary badge-sm"
+                            className="badge badge-outline badge-primary badge-sm capitalize"
                           >
-                            {category}
+                            {ActivityTypeLabels[
+                              category as keyof typeof ActivityTypeLabels
+                            ] || category}
                           </div>
                         ))}
                       </div>

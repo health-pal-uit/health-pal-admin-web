@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Activity } from "../type";
+import { Activity, ActivityType, ActivityTypeLabels } from "../type";
 
 interface AddEditActivityModalProps {
   activity: Activity | null;
@@ -20,20 +20,28 @@ export function AddEditActivityModal({
 }: AddEditActivityModalProps) {
   const [name, setName] = useState("");
   const [metValue, setMetValue] = useState("");
-  const [categories, setCategories] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (activity) {
       setName(activity.name);
       setMetValue(activity.met_value.toString());
-      setCategories(activity.categories?.join(", ") || "");
+      setSelectedCategories(activity.categories || []);
     } else {
       setName("");
       setMetValue("");
-      setCategories("");
+      setSelectedCategories([]);
     }
   }, [activity]);
+
+  const handleCategoryToggle = (category: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,17 +55,16 @@ export function AddEditActivityModal({
       return;
     }
 
-    const categoriesArray = categories
-      .split(",")
-      .map((c) => c.trim())
-      .filter((c) => c.length > 0);
+    if (selectedCategories.length === 0) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       await onSave({
         name: name.trim(),
         met_value: metValueNum,
-        categories: categoriesArray,
+        categories: selectedCategories,
       });
     } finally {
       setIsSubmitting(false);
@@ -112,15 +119,31 @@ export function AddEditActivityModal({
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Categories</span>
+              <span className="label-text">Categories *</span>
             </label>
-            <input
-              type="text"
-              placeholder="e.g., Cardio, Outdoor (comma-separated)"
-              value={categories}
-              onChange={(e) => setCategories(e.target.value)}
-              className="input input-bordered w-full"
-            />
+            <div className="grid grid-cols-2 gap-2">
+              {Object.values(ActivityType).map((type) => (
+                <label
+                  key={type}
+                  className="label cursor-pointer justify-start gap-2 p-2 border rounded-lg hover:bg-base-200"
+                >
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary checkbox-sm"
+                    checked={selectedCategories.includes(type)}
+                    onChange={() => handleCategoryToggle(type)}
+                  />
+                  <span className="label-text">{ActivityTypeLabels[type]}</span>
+                </label>
+              ))}
+            </div>
+            {selectedCategories.length === 0 && (
+              <label className="label">
+                <span className="label-text-alt text-error">
+                  Please select at least one category
+                </span>
+              </label>
+            )}
           </div>
 
           <div className="modal-action">
