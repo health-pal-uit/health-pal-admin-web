@@ -20,16 +20,12 @@ export default function ActivitiesPage() {
     null,
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalActivities, setTotalActivities] = useState(0);
   const [limit] = useState(10);
 
   const fetchActivities = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(
-        `/api/activities?page=${currentPage}&limit=${limit}`,
-      );
+      const res = await fetch(`/api/activities?page=1&limit=1000`);
 
       if (res.status === 401) {
         toast.error("Session expired. Please login again.");
@@ -46,8 +42,6 @@ export default function ActivitiesPage() {
 
       const activitiesList = Array.isArray(data.data) ? data.data : [];
       setActivities(activitiesList);
-      setTotalActivities(activitiesList.length);
-      setTotalPages(Math.ceil(activitiesList.length / limit));
     } catch (error) {
       toast.error("An error occurred while fetching activities.");
       console.error(error);
@@ -58,7 +52,7 @@ export default function ActivitiesPage() {
 
   useEffect(() => {
     fetchActivities();
-  }, [currentPage, limit, router]);
+  }, []);
 
   const activeActivities = activities.filter((a) => !a.deleted_at);
   const deletedActivities = activities.filter((a) => a.deleted_at);
@@ -66,6 +60,18 @@ export default function ActivitiesPage() {
   const filteredActive = activeActivities.filter((activity) =>
     activity.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  // Client-side pagination
+  const totalFilteredActivities = filteredActive.length;
+  const totalPages = Math.ceil(totalFilteredActivities / limit);
+  const startIndex = (currentPage - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedActivities = filteredActive.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleAddEdit = (activity?: Activity) => {
     setEditingActivity(activity || null);
@@ -161,7 +167,14 @@ export default function ActivitiesPage() {
         document.getElementById("delete_activity_modal") as HTMLDialogElement
       )?.close();
       setDeletingActivity(null);
-      await fetchActivities();
+
+      // Update local state instead of refetching
+      setActivities((prev) => prev.filter((a) => a.id !== deletingActivity.id));
+
+      // Adjust page if last item on current page was deleted
+      if (paginatedActivities.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
     } catch (error) {
       toast.error("An error occurred while deleting the activity.");
       console.error(error);
@@ -204,10 +217,48 @@ export default function ActivitiesPage() {
       </label>
 
       <ActivityTable
-        activities={filteredActive}
+        activities={paginatedActivities}
         onEdit={handleAddEdit}
         onDelete={handleDeleteActivity}
       />
+
+      {!isLoading && totalPages > 1 && (
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-base-content/70">
+                Showing {startIndex + 1} to{" "}
+                {Math.min(endIndex, totalFilteredActivities)} of{" "}
+                {totalFilteredActivities} {searchQuery ? "filtered " : ""}
+                activities
+              </div>
+              <div className="join">
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  «
+                </button>
+                <button className="join-item btn btn-sm">
+                  Page {currentPage} of {totalPages}
+                </button>
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DeletedActivitiesTable activities={deletedActivities} />
 
