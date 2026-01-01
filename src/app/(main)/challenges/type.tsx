@@ -1,8 +1,25 @@
 export type Difficulty = "easy" | "medium" | "hard";
 
+export interface Activity {
+  id: string;
+  name: string;
+  met_value: number;
+  categories: string[];
+  deleted_at?: string | null;
+}
+
 export interface ActivityRecord {
   id: string;
-  // Add other activity record fields as needed
+  duration_minutes: number;
+  kcal_burned: number | null;
+  rhr: number | null;
+  ahr: number | null;
+  user_owned: boolean;
+  type: string;
+  intensity_level: string | null;
+  created_at: string;
+  deleted_at: string | null;
+  activity?: Activity;
 }
 
 export interface Challenge {

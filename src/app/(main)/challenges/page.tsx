@@ -6,6 +6,8 @@ import { toast } from "react-hot-toast";
 import { Challenge } from "./type";
 import { ChallengeCard } from "./components/challenge-card";
 import { AddEditChallengeModal } from "./components/add-edit-modal";
+import { AddActivityModal } from "./components/add-activity-modal";
+import { ViewActivitiesModal } from "./components/view-activities-modal";
 import Header from "@/src/components/shared/Header";
 
 export default function ChallengesPage() {
@@ -22,6 +24,10 @@ export default function ChallengesPage() {
   const [deletingChallenge, setDeletingChallenge] = useState<Challenge | null>(
     null,
   );
+  const [addingActivityChallenge, setAddingActivityChallenge] =
+    useState<Challenge | null>(null);
+  const [viewingActivitiesChallenge, setViewingActivitiesChallenge] =
+    useState<Challenge | null>(null);
 
   const fetchChallenges = async () => {
     try {
@@ -179,6 +185,43 @@ export default function ChallengesPage() {
     }, 300);
   };
 
+  const handleOpenAddActivity = (challenge: Challenge) => {
+    setAddingActivityChallenge(challenge);
+    (
+      document.getElementById("add_activity_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const handleCloseAddActivity = () => {
+    (
+      document.getElementById("add_activity_modal") as HTMLDialogElement
+    )?.close();
+    setTimeout(() => {
+      setAddingActivityChallenge(null);
+    }, 300);
+  };
+
+  const handleAddActivitySuccess = () => {
+    toast.success("Activity added successfully!");
+    fetchChallenges();
+  };
+
+  const handleOpenViewActivities = (challenge: Challenge) => {
+    setViewingActivitiesChallenge(challenge);
+    (
+      document.getElementById("view_activities_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const handleCloseViewActivities = () => {
+    (
+      document.getElementById("view_activities_modal") as HTMLDialogElement
+    )?.close();
+    setTimeout(() => {
+      setViewingActivitiesChallenge(null);
+    }, 300);
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <Header
@@ -208,6 +251,8 @@ export default function ChallengesPage() {
               challenge={challenge}
               onEdit={handleAddEdit}
               onDelete={handleDeleteChallenge}
+              onAddActivity={handleOpenAddActivity}
+              onViewActivities={handleOpenViewActivities}
             />
           ))}
         </div>
@@ -254,6 +299,17 @@ export default function ChallengesPage() {
         challenge={editingChallenge}
         onClose={handleCloseModal}
         onSave={handleSaveChallenge}
+      />
+
+      <AddActivityModal
+        challenge={addingActivityChallenge}
+        onClose={handleCloseAddActivity}
+        onSuccess={handleAddActivitySuccess}
+      />
+
+      <ViewActivitiesModal
+        challenge={viewingActivitiesChallenge}
+        onClose={handleCloseViewActivities}
       />
 
       <dialog id="delete_challenge_modal" className="modal">

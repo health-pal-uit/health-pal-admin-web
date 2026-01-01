@@ -1,6 +1,13 @@
 "use client";
 
-import { MoreVertical, Pencil, Trash2, Target } from "lucide-react";
+import {
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Target,
+  Medal,
+  Activity,
+} from "lucide-react";
 import Image from "next/image";
 import { Challenge, difficultyColors, difficultyLabels } from "../type";
 
@@ -8,12 +15,16 @@ interface ChallengeCardProps {
   challenge: Challenge;
   onEdit: (challenge: Challenge) => void;
   onDelete: (challenge: Challenge) => void;
+  onAddActivity: (challenge: Challenge) => void;
+  onViewActivities: (challenge: Challenge) => void;
 }
 
 export function ChallengeCard({
   challenge,
   onEdit,
   onDelete,
+  onAddActivity,
+  onViewActivities,
 }: ChallengeCardProps) {
   const getImageUrl = (img: Challenge["image_url"]): string | null => {
     if (!img) return null;
@@ -79,6 +90,11 @@ export function ChallengeCard({
               className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10"
             >
               <li>
+                <a onClick={() => onAddActivity(challenge)}>
+                  <Medal className="h-4 w-4" /> Add Activity
+                </a>
+              </li>
+              <li>
                 <a onClick={() => onEdit(challenge)}>
                   <Pencil className="h-4 w-4" /> Edit
                 </a>
@@ -92,10 +108,42 @@ export function ChallengeCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between w-full mt-4 pt-4 border-t border-base-200">
-          <p className="text-base-content/60 text-xs">
-            Created {formatDate(challenge.created_at)}
-          </p>
+        <div className="w-full mt-4 pt-4 border-t border-base-200">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <Activity className="h-4 w-4 text-primary" />
+              <div>
+                <p className="text-sm font-medium">
+                  {challenge.activity_records.length}{" "}
+                  {challenge.activity_records.length === 1
+                    ? "Activity"
+                    : "Activities"}
+                </p>
+                {challenge.activity_records.length > 0 && (
+                  <p className="text-xs text-base-content/60">
+                    {challenge.activity_records.reduce(
+                      (sum, record) => sum + record.duration_minutes,
+                      0,
+                    )}{" "}
+                    min total
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-base-content/60 text-xs">
+                {formatDate(challenge.created_at)}
+              </p>
+            </div>
+          </div>
+          {challenge.activity_records.length > 0 && (
+            <button
+              className="btn btn-sm btn-outline btn-primary w-full"
+              onClick={() => onViewActivities(challenge)}
+            >
+              View All Activities
+            </button>
+          )}
         </div>
       </div>
     </div>
