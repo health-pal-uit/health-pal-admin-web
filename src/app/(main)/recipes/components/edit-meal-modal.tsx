@@ -1,20 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Upload } from "lucide-react";
+import { Recipe } from "../type";
 
-interface AddMealModalProps {
+interface EditMealModalProps {
+  meal: Recipe | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
+export const EditMealModal = ({
+  meal,
+  onClose,
+  onSuccess,
+}: EditMealModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    serving_gr: "",
     kcal_per_100gr: "",
     protein_per_100gr: "",
     fat_per_100gr: "",
@@ -24,11 +29,30 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
     tags: "",
     notes: "",
     image_url: "",
-    is_verified: true,
   });
+
+  useEffect(() => {
+    if (meal) {
+      setFormData({
+        name: meal.title,
+        kcal_per_100gr: meal.calories.toString(),
+        protein_per_100gr: meal.protein.toString(),
+        fat_per_100gr: meal.fat.toString(),
+        carbs_per_100gr: meal.carbs.toString(),
+        fiber_per_100gr: meal.fiber?.toString() || "",
+        rating: meal.rating?.toString() || "",
+        tags: meal.tags.join(", "),
+        notes: meal.notes || "",
+        image_url: meal.imageUrl || "",
+      });
+      setImagePreview(meal.imageUrl);
+    }
+  }, [meal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!meal) return;
+
     setIsSubmitting(true);
 
     try {
@@ -36,7 +60,6 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
 
       // Add required fields
       submitFormData.append("name", formData.name);
-      submitFormData.append("serving_gr", formData.serving_gr);
       submitFormData.append("kcal_per_100gr", formData.kcal_per_100gr);
       submitFormData.append("protein_per_100gr", formData.protein_per_100gr);
       submitFormData.append("fat_per_100gr", formData.fat_per_100gr);
@@ -59,9 +82,6 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
         submitFormData.append("tags", JSON.stringify(tagsArray));
       }
 
-      // Add is_verified
-      submitFormData.append("is_verified", String(formData.is_verified));
-
       // Add image file if selected
       if (selectedImage) {
         submitFormData.append("image", selectedImage);
@@ -69,21 +89,21 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
         submitFormData.append("image_url", formData.image_url);
       }
 
-      const response = await fetch("/api/meals", {
-        method: "POST",
+      const response = await fetch(`/api/meals/${meal.id}`, {
+        method: "PATCH",
         body: submitFormData,
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to create meal");
+        throw new Error(error.message || "Failed to update meal");
       }
 
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error creating meal:", error);
-      alert(error instanceof Error ? error.message : "Failed to create meal");
+      console.error("Error updating meal:", error);
+      alert(error instanceof Error ? error.message : "Failed to update meal");
     } finally {
       setIsSubmitting(false);
     }
@@ -92,11 +112,10 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: value,
     }));
   };
 
@@ -117,13 +136,16 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
+    setFormData((prev) => ({ ...prev, image_url: "" }));
   };
 
+  if (!meal) return null;
+
   return (
-    <dialog id="add_meal_modal" className="modal">
+    <dialog id="edit_meal_modal" className="modal">
       <div className="modal-box max-w-2xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-lg">Add New Meal</h3>
+          <h3 className="font-bold text-lg">Edit Meal</h3>
           <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
             <X className="h-4 w-4" />
           </button>
@@ -142,22 +164,6 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
                 placeholder="e.g., Chicken Salad"
                 value={formData.name}
                 onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Serving Size (grams) *</span>
-              </label>
-              <input
-                type="number"
-                name="serving_gr"
-                className="input input-bordered"
-                placeholder="e.g., 100"
-                value={formData.serving_gr}
-                onChange={handleChange}
-                step="0.01"
                 required
               />
             </div>
@@ -347,19 +353,6 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
                 onChange={handleChange}
               />
             </div>
-
-            <div className="form-control md:col-span-2">
-              <label className="label cursor-pointer justify-start gap-2">
-                <input
-                  type="checkbox"
-                  name="is_verified"
-                  className="checkbox"
-                  checked={formData.is_verified}
-                  onChange={handleChange}
-                />
-                <span className="label-text">Mark as verified</span>
-              </label>
-            </div>
           </div>
 
           <div className="modal-action">
@@ -379,10 +372,10 @@ export const AddMealModal = ({ onClose, onSuccess }: AddMealModalProps) => {
               {isSubmitting ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
-                  Creating...
+                  Updating...
                 </>
               ) : (
-                "Create Meal"
+                "Update Meal"
               )}
             </button>
           </div>

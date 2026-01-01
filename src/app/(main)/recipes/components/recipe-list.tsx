@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CheckCircle, XCircle, Clock, Star, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Eye, Pencil } from "lucide-react";
 import { Recipe } from "../type";
 
 interface RecipeListProps {
@@ -8,6 +8,7 @@ interface RecipeListProps {
   onViewDetails: (recipe: Recipe) => void;
   onApprove: (recipe: Recipe) => void;
   onReject: (recipe: Recipe) => void;
+  onEdit: (recipe: Recipe) => void;
 }
 
 export const RecipeList = ({
@@ -16,6 +17,7 @@ export const RecipeList = ({
   onViewDetails,
   onApprove,
   onReject,
+  onEdit,
 }: RecipeListProps) => {
   if (isLoading) {
     return (
@@ -129,6 +131,12 @@ export const RecipeList = ({
                 onClick={() => onViewDetails(recipe)}
               >
                 <Eye className="h-4 w-4" /> View Details
+              </button>
+              <button
+                className="btn btn-sm btn-outline btn-primary rounded-full"
+                onClick={() => onEdit(recipe)}
+              >
+                <Pencil className="h-4 w-4" /> Edit
               </button>
               {recipe.status === "pending" && (
                 <>

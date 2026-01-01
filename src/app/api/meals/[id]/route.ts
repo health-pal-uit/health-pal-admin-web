@@ -51,17 +51,16 @@ export async function PATCH(
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  const formData = await request.formData();
   const url = `${process.env.BACKEND_API_URL}/meals/${id}`;
 
   try {
     const apiRes = await fetch(url, {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: formData,
     });
 
     const data = await apiRes.json();

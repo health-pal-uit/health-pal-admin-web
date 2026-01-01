@@ -12,6 +12,7 @@ import { PaginationControls } from "./components/pagination-controls";
 import { RecipeDetailModal } from "./components/recipe-detail";
 import { ReviewModal } from "./components/review-modal";
 import { AddMealModal } from "./components/add-meal-modal";
+import { EditMealModal } from "./components/edit-meal-modal";
 import { RejectModal } from "./components/reject-modal";
 import { Plus } from "lucide-react";
 
@@ -29,6 +30,7 @@ export default function RecipesPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [recipeToReject, setRecipeToReject] = useState<Recipe | null>(null);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const limit = 10;
 
   useEffect(() => {
@@ -222,6 +224,25 @@ export default function RecipesPage() {
     fetchRecipes();
   };
 
+  const handleOpenEditModal = (recipe: Recipe) => {
+    setEditingRecipe(recipe);
+    (
+      document.getElementById("edit_meal_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const handleCloseEditModal = () => {
+    (document.getElementById("edit_meal_modal") as HTMLDialogElement)?.close();
+    setTimeout(() => {
+      setEditingRecipe(null);
+    }, 300);
+  };
+
+  const handleEditSuccess = () => {
+    toast.success("Meal updated successfully!");
+    fetchRecipes();
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Header
@@ -250,6 +271,7 @@ export default function RecipesPage() {
         onViewDetails={handleOpenDetailModal}
         onApprove={handleApproveRecipe}
         onReject={handleRejectRecipe}
+        onEdit={handleOpenEditModal}
       />
 
       {!isLoading && filteredRecipes.length > 0 && (
@@ -279,6 +301,12 @@ export default function RecipesPage() {
       <AddMealModal
         onClose={handleCloseAddModal}
         onSuccess={handleAddSuccess}
+      />
+
+      <EditMealModal
+        meal={editingRecipe}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
       />
     </div>
   );

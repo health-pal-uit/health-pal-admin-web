@@ -48,16 +48,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json();
+    const formData = await request.formData();
     const url = `${process.env.BACKEND_API_URL}/meals`;
 
     const apiRes = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: formData,
     });
 
     const data = await apiRes.json();
