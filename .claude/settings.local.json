@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc --noEmit)"
+    ]
+  }
+}

@@ -1,5 +1,14 @@
 import Image from "next/image";
-import { CheckCircle, XCircle, Clock, Star, Eye, Pencil } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Star,
+  Eye,
+  Pencil,
+  Utensils,
+  Apple,
+} from "lucide-react";
 import { Recipe } from "../type";
 
 interface RecipeListProps {
@@ -42,16 +51,23 @@ export const RecipeList = ({
           key={recipe.id}
           className="card md:flex-row bg-base-100 shadow-xl rounded-2xl overflow-hidden"
         >
-          <figure className="relative w-full md:w-56 h-48 md:h-auto md:min-h-full flex-shrink-0 overflow-hidden">
-            <Image
-              src={
-                recipe.imageUrl ||
-                `https://placehold.co/400x300/E8F5F1/2D8B6E?text=Recipe`
-              }
-              alt={recipe.title}
-              fill
-              className="object-cover"
-            />
+          <figure className="relative w-full md:w-56 h-48 md:h-auto md:min-h-full flex-shrink-0 overflow-hidden bg-base-200">
+            {recipe.imageUrl ? (
+              <Image
+                src={recipe.imageUrl}
+                alt={recipe.title}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                {recipe.madeFromIngredients ? (
+                  <Apple className="h-16 w-16 text-base-content/30" />
+                ) : (
+                  <Utensils className="h-16 w-16 text-base-content/30" />
+                )}
+              </div>
+            )}
           </figure>
 
           <div className="card-body relative">
