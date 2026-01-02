@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Clock, Users, ChefHat } from "lucide-react";
+import { Clock, Users, ChefHat, Utensils, Apple } from "lucide-react";
 import type { Recipe } from "../type";
 
 interface RecipeDetailModalProps {
@@ -26,16 +26,23 @@ export function RecipeDetailModal({ recipe, onClose }: RecipeDetailModalProps) {
 
           <div className="py-4 max-h-[70vh] overflow-y-auto">
             <figure className="w-full h-64 bg-base-200 rounded-lg overflow-hidden mb-6 flex items-center justify-center">
-              <Image
-                src={
-                  recipe.imageUrl ||
-                  `https://placehold.co/800x400/E8F5F1/2D8B6E?text=Recipe`
-                }
-                alt={recipe.title || "Recipe"}
-                width={800}
-                height={400}
-                className="h-full w-auto object-contain"
-              />
+              {recipe.imageUrl ? (
+                <Image
+                  src={recipe.imageUrl}
+                  alt={recipe.title || "Recipe"}
+                  width={800}
+                  height={400}
+                  className="h-full w-auto object-contain"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-full">
+                  {recipe.madeFromIngredients ? (
+                    <Apple className="h-24 w-24 text-base-content/30" />
+                  ) : (
+                    <Utensils className="h-24 w-24 text-base-content/30" />
+                  )}
+                </div>
+              )}
             </figure>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
