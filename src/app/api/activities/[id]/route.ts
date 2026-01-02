@@ -7,7 +7,11 @@ import {
 
 export const PATCH = withAuth(
   async (request: NextRequest, { token, params }) => {
-    const { id } = await params;
+    const resolvedParams = await params;
+    if (!resolvedParams) {
+      throw new Error("No params provided");
+    }
+    const { id } = resolvedParams;
     const body = await request.json();
 
     const response = await fetchBackend(`/activities/${id}`, token, {
@@ -21,7 +25,11 @@ export const PATCH = withAuth(
 
 export const DELETE = withAuth(
   async (_request: NextRequest, { token, params }) => {
-    const { id } = await params;
+    const resolvedParams = await params;
+    if (!resolvedParams) {
+      throw new Error("No params provided");
+    }
+    const { id } = resolvedParams;
 
     const response = await fetchBackend(`/activities/${id}`, token, {
       method: "DELETE",

@@ -42,16 +42,15 @@ export const RecipeList = ({
           key={recipe.id}
           className="card md:flex-row bg-base-100 shadow-xl rounded-2xl overflow-hidden"
         >
-          <figure className="w-full md:w-56 h-48 md:h-full flex-shrink-0">
+          <figure className="relative w-full md:w-56 h-48 md:h-auto md:min-h-full flex-shrink-0 overflow-hidden">
             <Image
               src={
                 recipe.imageUrl ||
                 `https://placehold.co/400x300/E8F5F1/2D8B6E?text=Recipe`
               }
               alt={recipe.title}
-              width={400}
-              height={300}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
           </figure>
 
@@ -131,12 +130,6 @@ export const RecipeList = ({
                 onClick={() => onViewDetails(recipe)}
               >
                 <Eye className="h-4 w-4" /> View Details
-              </button>
-              <button
-                className="btn btn-sm btn-outline btn-primary rounded-full"
-                onClick={() => onEdit(recipe)}
-              >
-                <Pencil className="h-4 w-4" /> Edit
               </button>
               {recipe.status === "pending" && (
                 <>

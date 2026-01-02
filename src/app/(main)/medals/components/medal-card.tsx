@@ -1,15 +1,29 @@
 "use client";
 
-import { MoreVertical, Pencil, Trash2, Award } from "lucide-react";
+import {
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Award,
+  Link,
+  Target,
+} from "lucide-react";
 import Image from "next/image";
 import { Medal, tierColors, tierLabels } from "../type";
 
 interface MedalCardProps {
   medal: Medal;
   onEdit: (medal: Medal) => void;
+  onLinkChallenge: (medal: Medal) => void;
+  onViewChallenges: (medal: Medal) => void;
 }
 
-export function MedalCard({ medal, onEdit }: MedalCardProps) {
+export function MedalCard({
+  medal,
+  onEdit,
+  onLinkChallenge,
+  onViewChallenges,
+}: MedalCardProps) {
   const getImageUrl = (img: Medal["image_url"]): string | null => {
     if (!img) return null;
     if (typeof img === "string") return img;
@@ -48,6 +62,11 @@ export function MedalCard({ medal, onEdit }: MedalCardProps) {
               className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10"
             >
               <li>
+                <a onClick={() => onLinkChallenge(medal)}>
+                  <Link className="h-4 w-4" /> Link with Challenge
+                </a>
+              </li>
+              <li>
                 <a onClick={() => onEdit(medal)}>
                   <Pencil className="h-4 w-4" /> Edit
                 </a>
@@ -67,16 +86,34 @@ export function MedalCard({ medal, onEdit }: MedalCardProps) {
           <p className="text-base-content/70 mb-4 line-clamp-2">{medal.note}</p>
         )}
 
-        <div className="card-actions justify-between items-center">
-          <div className={`badge ${tierColors[medal.tier]}`}>
-            {tierLabels[medal.tier]}
-          </div>
-          {challengeCount > 0 && (
-            <div className="text-xs text-base-content/50">
-              {challengeCount}{" "}
-              {challengeCount === 1 ? "challenge" : "challenges"}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className={`badge ${tierColors[medal.tier]}`}>
+              {tierLabels[medal.tier]}
             </div>
-          )}
+          </div>
+
+          <div className="w-full pt-3 border-t border-base-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <Target className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">
+                    {challengeCount}{" "}
+                    {challengeCount === 1 ? "Challenge" : "Challenges"}
+                  </p>
+                </div>
+              </div>
+            </div>
+            {challengeCount > 0 && (
+              <button
+                className="btn btn-sm btn-outline btn-primary w-full"
+                onClick={() => onViewChallenges(medal)}
+              >
+                View All Challenges
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -6,6 +6,8 @@ import { toast } from "react-hot-toast";
 import { Medal } from "./type";
 import { MedalCard } from "./components/medal-card";
 import { AddEditMedalModal } from "./components/add-edit-modal";
+import { LinkChallengeModal } from "./components/link-challenge-modal";
+import { ViewChallengesModal } from "./components/view-challenges-modal";
 import Header from "@/src/components/shared/Header";
 
 export default function MedalsPage() {
@@ -17,6 +19,9 @@ export default function MedalsPage() {
   const [totalMedals, setTotalMedals] = useState(0);
   const [limit] = useState(10);
   const [editingMedal, setEditingMedal] = useState<Medal | null>(null);
+  const [linkingMedal, setLinkingMedal] = useState<Medal | null>(null);
+  const [viewingChallengesMedal, setViewingChallengesMedal] =
+    useState<Medal | null>(null);
 
   useEffect(() => {
     const fetchMedals = async () => {
@@ -84,6 +89,43 @@ export default function MedalsPage() {
     }
   };
 
+  const handleLinkChallenge = (medal: Medal) => {
+    setLinkingMedal(medal);
+    (
+      document.getElementById("link_challenge_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const handleCloseLinkModal = () => {
+    (
+      document.getElementById("link_challenge_modal") as HTMLDialogElement
+    )?.close();
+    setTimeout(() => {
+      setLinkingMedal(null);
+    }, 300);
+  };
+
+  const handleLinkSuccess = () => {
+    toast.success("Medal linked to challenge successfully!");
+    handleMedalSuccess();
+  };
+
+  const handleOpenViewChallenges = (medal: Medal) => {
+    setViewingChallengesMedal(medal);
+    (
+      document.getElementById("view_challenges_modal") as HTMLDialogElement
+    )?.showModal();
+  };
+
+  const handleCloseViewChallenges = () => {
+    (
+      document.getElementById("view_challenges_modal") as HTMLDialogElement
+    )?.close();
+    setTimeout(() => {
+      setViewingChallengesMedal(null);
+    }, 300);
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <Header
@@ -108,7 +150,13 @@ export default function MedalsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {medals.map((medal) => (
-            <MedalCard key={medal.id} medal={medal} onEdit={handleAddEdit} />
+            <MedalCard
+              key={medal.id}
+              medal={medal}
+              onEdit={handleAddEdit}
+              onLinkChallenge={handleLinkChallenge}
+              onViewChallenges={handleOpenViewChallenges}
+            />
           ))}
         </div>
       )}
@@ -154,6 +202,17 @@ export default function MedalsPage() {
         medal={editingMedal}
         onClose={handleCloseModal}
         onSuccess={handleMedalSuccess}
+      />
+
+      <LinkChallengeModal
+        medal={linkingMedal}
+        onClose={handleCloseLinkModal}
+        onSuccess={handleLinkSuccess}
+      />
+
+      <ViewChallengesModal
+        medal={viewingChallengesMedal}
+        onClose={handleCloseViewChallenges}
       />
     </div>
   );
