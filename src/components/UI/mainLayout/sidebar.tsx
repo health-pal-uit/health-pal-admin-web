@@ -10,6 +10,8 @@ import {
   MessageSquare,
   LogOut,
   Activity,
+  ChartColumnBig,
+  Bell,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -54,6 +56,18 @@ const menuItems = [
     label: "Community",
     icon: MessageSquare,
     href: "/community",
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    icon: Bell,
+    href: "/notifications",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: ChartColumnBig,
+    href: "/reports",
   },
 ];
 
