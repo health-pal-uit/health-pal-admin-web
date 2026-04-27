@@ -199,7 +199,7 @@ export function AddEditIngredientModal({
             <textarea
               name="notes"
               placeholder="Additional information..."
-              className="textarea textarea-bordered"
+              className="textarea textarea-bordered w-full"
               defaultValue={ingredient?.notes || ""}
             />
           </div>

@@ -12,6 +12,7 @@ import {
   Activity,
   ChartColumnBig,
   Bell,
+  Briefcase,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -62,6 +63,12 @@ const menuItems = [
     label: "Notifications",
     icon: Bell,
     href: "/notifications",
+  },
+  {
+    id: "experts",
+    label: "Experts",
+    icon: Briefcase,
+    href: "/experts",
   },
   {
     id: "reports",
