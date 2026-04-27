@@ -9,6 +9,7 @@ interface ExpertTableProps {
   isLoading: boolean;
   onApprove: (expert: Expert) => void;
   onReject: (expert: Expert) => void;
+  onViewProfile: (expert: Expert) => void;
 }
 
 export const ExpertTable = ({
@@ -16,15 +17,14 @@ export const ExpertTable = ({
   isLoading,
   onApprove,
   onReject,
+  onViewProfile,
 }: ExpertTableProps) => {
   const getStatusBadge = (status: Expert["status"]) => {
     switch (status) {
       case "pending":
         return "badge-warning";
-      case "approved":
+      case "verified":
         return "badge-success";
-      case "rejected":
-        return "badge-error";
       default:
         return "badge-ghost";
     }
@@ -64,7 +64,7 @@ export const ExpertTable = ({
                 <th>Expert</th>
                 <th>Email</th>
                 <th>Specialization</th>
-                <th>Experience</th>
+                <th>Rating</th>
                 <th>Status</th>
                 <th>Applied</th>
                 <th></th>
@@ -72,7 +72,11 @@ export const ExpertTable = ({
             </thead>
             <tbody>
               {experts.map((expert) => (
-                <tr key={expert.id} className="hover">
+                <tr
+                  key={expert.id}
+                  className="hover cursor-pointer"
+                  onClick={() => onViewProfile(expert)}
+                >
                   <td>
                     <div className="flex items-center gap-3">
                       <div className="avatar">
@@ -93,11 +97,9 @@ export const ExpertTable = ({
                       </div>
                       <div>
                         <div className="font-bold">{expert.name}</div>
-                        {expert.certificates_count && (
-                          <div className="text-sm opacity-50">
-                            {expert.certificates_count} certificates
-                          </div>
-                        )}
+                        <div className="text-sm opacity-50">
+                          {expert.canDoVideo && "Video Available"}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -107,7 +109,20 @@ export const ExpertTable = ({
                       {expert.specialization}
                     </span>
                   </td>
-                  <td>{expert.experience_years} years</td>
+                  <td>
+                    {expert.rating.count > 0 ? (
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold">
+                          {expert.rating.avg.toFixed(1)}★
+                        </span>
+                        <span className="text-sm opacity-60">
+                          ({expert.rating.count})
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm opacity-60">No ratings</span>
+                    )}
+                  </td>
                   <td>
                     <div className={`badge ${getStatusBadge(expert.status)}`}>
                       {expert.status}

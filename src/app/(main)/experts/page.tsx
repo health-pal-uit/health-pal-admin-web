@@ -6,35 +6,43 @@ import { toast } from "react-hot-toast";
 import { Expert, ExpertStatus } from "./type";
 import { ExpertTable } from "./components/expert-table";
 import { ReviewExpertModal } from "./components/review-modal";
+import { ExpertProfileModal } from "./components/expert-profile-modal";
 
 export default function ExpertsPage() {
   const modalRef = useRef<HTMLDialogElement>(null);
+  const profileModalRef = useRef<HTMLDialogElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<ExpertStatus | "all">("pending");
   const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
+  const [profileExpert, setProfileExpert] = useState<Expert | null>(null);
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(
     null,
   );
 
   const [experts, setExperts] = useState<Expert[]>([]);
+  const [allExperts, setAllExperts] = useState<Expert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Fetch experts
+  // Fetch all experts on initial load and when search changes
   useEffect(() => {
-    const fetchExperts = async () => {
+    const fetchAllExperts = async () => {
       try {
         setIsLoading(true);
         const params = new URLSearchParams({
           search: searchQuery,
-          ...(activeTab !== "all" && { status: activeTab }),
+          status: "all",
         });
 
         const res = await fetch(`/api/experts?${params}`);
         if (!res.ok) throw new Error("Failed to fetch experts");
 
         const data = await res.json();
-        setExperts(data.data || []);
+        const allExpertsData = data.data || [];
+        setAllExperts(allExpertsData);
+
+        // Filter for current tab
+        filterExpertsByTab(allExpertsData, activeTab);
       } catch (error) {
         console.error("Error fetching experts:", error);
         toast.error("Failed to load experts");
@@ -43,8 +51,21 @@ export default function ExpertsPage() {
       }
     };
 
-    fetchExperts();
-  }, [searchQuery, activeTab]);
+    fetchAllExperts();
+  }, [searchQuery]);
+
+  // Filter experts when tab changes
+  useEffect(() => {
+    filterExpertsByTab(allExperts, activeTab);
+  }, [activeTab, allExperts]);
+
+  const filterExpertsByTab = (data: Expert[], tab: ExpertStatus | "all") => {
+    if (tab === "all") {
+      setExperts(data);
+    } else {
+      setExperts(data.filter((e) => e.status === tab));
+    }
+  };
 
   const handleExpertClick = (expert: Expert, action: "approve" | "reject") => {
     setSelectedExpert(expert);
@@ -89,16 +110,22 @@ export default function ExpertsPage() {
     setReviewAction(null);
   };
 
+  const handleViewProfile = (expert: Expert) => {
+    setProfileExpert(expert);
+    profileModalRef.current?.showModal();
+  };
+
+  const handleCloseProfileModal = () => {
+    profileModalRef.current?.close();
+    setProfileExpert(null);
+  };
+
   const getPendingCount = () => {
-    return experts.filter((e) => e.status === "pending").length;
+    return allExperts.filter((e) => e.status === "pending").length;
   };
 
-  const getApprovedCount = () => {
-    return experts.filter((e) => e.status === "approved").length;
-  };
-
-  const getRejectedCount = () => {
-    return experts.filter((e) => e.status === "rejected").length;
+  const getVerifiedCount = () => {
+    return allExperts.filter((e) => e.status === "verified").length;
   };
 
   return (
@@ -137,17 +164,10 @@ export default function ExpertsPage() {
           <span className="badge badge-warning ml-2">{getPendingCount()}</span>
         </button>
         <button
-          onClick={() => setActiveTab("approved")}
-          className={`tab ${activeTab === "approved" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("verified")}
+          className={`tab ${activeTab === "verified" ? "tab-active" : ""}`}
         >
-          Approved <span className="badge ml-2">{getApprovedCount()}</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("rejected")}
-          className={`tab ${activeTab === "rejected" ? "tab-active" : ""}`}
-        >
-          Rejected{" "}
-          <span className="badge badge-error ml-2">{getRejectedCount()}</span>
+          Verified <span className="badge ml-2">{getVerifiedCount()}</span>
         </button>
         <button
           onClick={() => setActiveTab("all")}
@@ -163,6 +183,7 @@ export default function ExpertsPage() {
         isLoading={isLoading}
         onApprove={(expert) => handleExpertClick(expert, "approve")}
         onReject={(expert) => handleExpertClick(expert, "reject")}
+        onViewProfile={handleViewProfile}
       />
 
       {/* Review Modal */}
@@ -173,6 +194,13 @@ export default function ExpertsPage() {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         isLoading={isActionLoading}
+      />
+
+      {/* Profile Modal */}
+      <ExpertProfileModal
+        ref={profileModalRef}
+        expert={profileExpert}
+        onClose={handleCloseProfileModal}
       />
     </div>
   );

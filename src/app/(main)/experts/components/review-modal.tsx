@@ -74,9 +74,11 @@ export const ReviewExpertModal = forwardRef<
                 </p>
               </div>
               <div>
-                <p className="text-sm text-base-content/70">Experience</p>
+                <p className="text-sm text-base-content/70">Rating</p>
                 <p className="font-bold text-base-content">
-                  {expert.experience_years} years
+                  {expert.rating.count > 0
+                    ? `${expert.rating.avg.toFixed(1)}★ (${expert.rating.count})`
+                    : "No ratings"}
                 </p>
               </div>
               <div>
@@ -86,9 +88,9 @@ export const ReviewExpertModal = forwardRef<
                 </p>
               </div>
               <div>
-                <p className="text-sm text-base-content/70">Certificates</p>
+                <p className="text-sm text-base-content/70">Video Available</p>
                 <p className="font-bold text-base-content">
-                  {expert.certificates_count || 0}
+                  {expert.canDoVideo ? "Yes" : "No"}
                 </p>
               </div>
             </div>
@@ -101,31 +103,17 @@ export const ReviewExpertModal = forwardRef<
             </div>
           )}
 
-          {expert.qualifications && expert.qualifications.length > 0 && (
+          {expert.licenseUrl && (
             <div className="bg-base-200 rounded-lg p-4">
-              <p className="text-sm text-base-content/70 mb-2">
-                Qualifications
-              </p>
-              <ul className="space-y-1">
-                {expert.qualifications.map((qual, idx) => (
-                  <li
-                    key={idx}
-                    className="text-sm text-base-content flex items-start gap-2"
-                  >
-                    <span className="text-success">✓</span>
-                    <span>{qual}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {expert.status === "rejected" && expert.rejection_reason && (
-            <div className="bg-error/10 rounded-lg p-4 border border-error/20">
-              <p className="text-sm text-error font-bold mb-1">
-                Rejection Reason
-              </p>
-              <p className="text-sm text-error/80">{expert.rejection_reason}</p>
+              <p className="text-sm text-base-content/70 mb-2">License</p>
+              <div className="relative w-full h-40 bg-base-300 rounded">
+                <Image
+                  src={expert.licenseUrl}
+                  alt="License"
+                  fill
+                  className="rounded object-cover"
+                />
+              </div>
             </div>
           )}
 
