@@ -1,22 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { MoreVertical, Check, X } from "lucide-react";
 import { Expert } from "../type";
 
 interface ExpertTableProps {
   experts: Expert[];
   isLoading: boolean;
-  onApprove: (expert: Expert) => void;
-  onReject: (expert: Expert) => void;
+  onReview: (expert: Expert) => void;
   onViewProfile: (expert: Expert) => void;
 }
 
 export const ExpertTable = ({
   experts,
   isLoading,
-  onApprove,
-  onReject,
+  onReview,
   onViewProfile,
 }: ExpertTableProps) => {
   const getStatusBadge = (status: Expert["status"]) => {
@@ -133,32 +130,15 @@ export const ExpertTable = ({
                   </td>
                   <td>
                     {expert.status === "pending" && (
-                      <div className="dropdown dropdown-end">
-                        <button
-                          tabIndex={0}
-                          className="btn btn-ghost btn-circle btn-sm"
-                        >
-                          <MoreVertical className="h-5 w-5" />
-                        </button>
-                        <ul
-                          tabIndex={0}
-                          className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56 z-10"
-                        >
-                          <li>
-                            <a onClick={() => onApprove(expert)}>
-                              <Check className="h-4 w-4 text-success" /> Approve
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              className="text-error"
-                              onClick={() => onReject(expert)}
-                            >
-                              <X className="h-4 w-4" /> Reject
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onReview(expert);
+                        }}
+                      >
+                        Review
+                      </button>
                     )}
                   </td>
                 </tr>

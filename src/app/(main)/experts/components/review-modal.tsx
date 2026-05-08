@@ -6,22 +6,28 @@ import { useState, forwardRef } from "react";
 
 interface ReviewExpertModalProps {
   expert: Expert | null;
-  action: "approve" | "reject" | null;
   onClose: () => void;
-  onSubmit: (notes?: string) => void;
+  onVerify: (notes?: string) => void;
+  onReject: (notes: string) => void;
   isLoading?: boolean;
 }
 
 export const ReviewExpertModal = forwardRef<
   HTMLDialogElement,
   ReviewExpertModalProps
->(({ expert, action, onClose, onSubmit, isLoading = false }, ref) => {
+>(({ expert, onClose, onVerify, onReject, isLoading = false }, ref) => {
   const [notes, setNotes] = useState("");
 
-  if (!expert || !action) return null;
+  if (!expert) return null;
 
-  const handleSubmit = () => {
-    onSubmit(notes);
+  const handleVerify = () => {
+    onVerify(notes);
+    setNotes("");
+  };
+
+  const handleReject = () => {
+    if (!notes.trim()) return;
+    onReject(notes);
     setNotes("");
   };
 
@@ -33,9 +39,7 @@ export const ReviewExpertModal = forwardRef<
   return (
     <dialog ref={ref} className="modal modal-bottom sm:modal-middle">
       <div className="modal-box">
-        <h3 className="font-bold text-lg">
-          {action === "approve" ? "Approve Expert" : "Reject Expert"}
-        </h3>
+        <h3 className="font-bold text-lg">Review Expert</h3>
 
         <div className="flex items-center gap-3 py-4">
           <div className="avatar">
@@ -117,20 +121,18 @@ export const ReviewExpertModal = forwardRef<
             </div>
           )}
 
-          {action === "reject" && (
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Rejection Reason (required)</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered h-24"
-                placeholder="Enter rejection reason..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-          )}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Notes (required for rejection)</span>
+            </label>
+            <textarea
+              className="textarea textarea-bordered h-24"
+              placeholder="Enter notes or rejection reason..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
         </div>
 
         <div className="modal-action">
@@ -142,15 +144,18 @@ export const ReviewExpertModal = forwardRef<
             Cancel
           </button>
           <button
-            className={`btn ${action === "approve" ? "btn-success" : "btn-error"}`}
-            onClick={handleSubmit}
-            disabled={isLoading || (action === "reject" && !notes.trim())}
+            className="btn btn-error"
+            onClick={handleReject}
+            disabled={isLoading || !notes.trim()}
           >
-            {isLoading
-              ? "Processing..."
-              : action === "approve"
-                ? "Approve"
-                : "Reject"}
+            {isLoading ? "Processing..." : "Reject"}
+          </button>
+          <button
+            className="btn btn-success"
+            onClick={handleVerify}
+            disabled={isLoading}
+          >
+            {isLoading ? "Processing..." : "Verify"}
           </button>
         </div>
       </div>

@@ -15,9 +15,6 @@ export default function ExpertsPage() {
   const [activeTab, setActiveTab] = useState<ExpertStatus | "all">("pending");
   const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
   const [profileExpert, setProfileExpert] = useState<Expert | null>(null);
-  const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(
-    null,
-  );
 
   const [experts, setExperts] = useState<Expert[]>([]);
   const [allExperts, setAllExperts] = useState<Expert[]>([]);
@@ -67,38 +64,55 @@ export default function ExpertsPage() {
     }
   };
 
-  const handleExpertClick = (expert: Expert, action: "approve" | "reject") => {
+  const handleReviewClick = (expert: Expert) => {
     setSelectedExpert(expert);
-    setReviewAction(action);
     modalRef.current?.showModal();
   };
 
-  const handleSubmit = async (reason?: string) => {
+  const handleVerify = async () => {
     if (!selectedExpert) return;
 
     try {
       setIsActionLoading(true);
-      const endpoint =
-        reviewAction === "approve"
-          ? `/api/experts/${selectedExpert.id}/approve`
-          : `/api/experts/${selectedExpert.id}/reject`;
-
-      const res = await fetch(endpoint, {
-        method: "POST",
+      const res = await fetch(`/api/experts/${selectedExpert.id}/verify`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body:
-          reviewAction === "reject" ? JSON.stringify({ reason }) : undefined,
       });
 
-      if (!res.ok) throw new Error(`Failed to ${reviewAction} expert`);
+      if (!res.ok) throw new Error("Failed to verify expert");
 
-      toast.success(`Expert ${reviewAction}d successfully`);
+      toast.success("Expert verified successfully");
       handleCloseModal();
 
       setExperts(experts.filter((e) => e.id !== selectedExpert.id));
     } catch (error) {
-      console.error(`Error ${reviewAction} expert:`, error);
-      toast.error(`Failed to ${reviewAction} expert`);
+      console.error("Error verifying expert:", error);
+      toast.error("Failed to verify expert");
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleReject = async (reason: string) => {
+    if (!selectedExpert) return;
+
+    try {
+      setIsActionLoading(true);
+      const res = await fetch(`/api/experts/${selectedExpert.id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!res.ok) throw new Error("Failed to reject expert");
+
+      toast.success("Expert rejected successfully");
+      handleCloseModal();
+
+      setExperts(experts.filter((e) => e.id !== selectedExpert.id));
+    } catch (error) {
+      console.error("Error rejecting expert:", error);
+      toast.error("Failed to reject expert");
     } finally {
       setIsActionLoading(false);
     }
@@ -107,7 +121,6 @@ export default function ExpertsPage() {
   const handleCloseModal = () => {
     modalRef.current?.close();
     setSelectedExpert(null);
-    setReviewAction(null);
   };
 
   const handleViewProfile = (expert: Expert) => {
@@ -181,8 +194,7 @@ export default function ExpertsPage() {
       <ExpertTable
         experts={experts}
         isLoading={isLoading}
-        onApprove={(expert) => handleExpertClick(expert, "approve")}
-        onReject={(expert) => handleExpertClick(expert, "reject")}
+        onReview={handleReviewClick}
         onViewProfile={handleViewProfile}
       />
 
@@ -190,9 +202,9 @@ export default function ExpertsPage() {
       <ReviewExpertModal
         ref={modalRef}
         expert={selectedExpert}
-        action={reviewAction}
         onClose={handleCloseModal}
-        onSubmit={handleSubmit}
+        onVerify={handleVerify}
+        onReject={handleReject}
         isLoading={isActionLoading}
       />
 
