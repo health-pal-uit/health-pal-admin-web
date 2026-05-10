@@ -77,6 +77,7 @@ export default function ExpertsPage() {
       const res = await fetch(`/api/experts/${selectedExpert.id}/verify`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_verified: true }),
       });
 
       if (!res.ok) throw new Error("Failed to verify expert");
